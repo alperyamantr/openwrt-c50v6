@@ -1,0 +1,1 @@
+# openwrt-c50v6
