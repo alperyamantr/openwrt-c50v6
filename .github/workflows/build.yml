@@ -48,6 +48,11 @@ jobs:
         run: |
           ../scripts/optimize.sh
 
+      - name: Show target
+        working-directory: openwrt
+        run: |
+          grep CONFIG_TARGET .config
+
       - name: Download sources
         working-directory: openwrt
         run: |

@@ -16,6 +16,9 @@ touch /tmp/hagezi_multi.conf
 
     # Conntrack limitini gaming icin genisletir:
     sysctl -w net.netfilter.nf_conntrack_max=32768
+    
+    # Dusuk gecikme modunu aktif eder:
+    sysctl -w net.ipv4.tcp_low_latency=1
 ) &
 
 exit 0

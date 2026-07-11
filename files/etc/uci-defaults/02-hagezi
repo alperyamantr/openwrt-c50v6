@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/etc/init.d/hagezi_init enable
+/etc/init.d/hagezi_init start
+
+exit 0

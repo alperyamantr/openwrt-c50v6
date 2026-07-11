@@ -2,6 +2,8 @@ luci
 dnsmasq-full
 firewall4
 nftables
+kmod-nfnetlink-queue
+kmod-nft-queue
 ca-bundle
 
 -uhttpd

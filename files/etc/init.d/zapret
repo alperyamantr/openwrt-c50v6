@@ -15,7 +15,7 @@ start() {
         --dpi-desync-split-pos=1 \
         --dpi-desync-ttl=3 \
         --dpi-desync-repeats=3 \
-        --dpi-desync-fooling=md5sig,badsum \
+        --dpi-desync-fooling=badsum \
         --dpi-desync-fake-tls=/opt/zapret/files/fake/tls_clienthello_www_google_com.bin \
         --new \
         --filter-tcp=80 \
@@ -23,7 +23,7 @@ start() {
         --dpi-desync-ttl=3 \
         --dpi-desync-repeats=3 \
         --dpi-desync-split-pos=method+2 \
-        --dpi-desync-fooling=md5sig,badsum \
+        --dpi-desync-fooling=badsum \
         --new \
         --filter-udp=443 \
         --dpi-desync=fake \
