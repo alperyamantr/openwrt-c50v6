@@ -1,0 +1,57 @@
+
+config system
+	option hostname 'OpenWrt'
+	option timezone '<+03>-3'
+	option zonename 'Europe/Istanbul'
+	option ttylogin '0'
+	option log_size '32'
+	option urandom_seed '0'
+	option log_proto 'udp'
+	option conloglevel '3'
+	option cronloglevel '10'
+	option concurrency '1'
+
+config timeserver 'ntp'
+	list server '0.openwrt.pool.ntp.org'
+	list server '1.openwrt.pool.ntp.org'
+	list server '2.openwrt.pool.ntp.org'
+	list server '3.openwrt.pool.ntp.org'
+
+config led 'led_lan'
+	option name 'lan'
+	option sysfs 'green:lan'
+	option trigger 'netdev'
+	option port_mask '0x1e'
+	option dev 'br-lan'
+	option mode 'link tx rx'
+
+config led 'led_wan'
+	option name 'wan'
+	option sysfs 'green:wan'
+	option trigger 'netdev'
+	option port_mask '0x01'
+	option dev 'eth0.2'
+	option mode 'link tx rx'
+
+config led 'led_wlan2g'
+	option name 'wlan2g'
+	option sysfs 'green:wlan2g'
+	option trigger 'phy0tpt'
+
+config led 'led_wlan5g'
+	option name 'wlan5g'
+	option sysfs 'green:wlan5g'
+	option trigger 'phy1tpt'
+
+config sysctl
+	option name 'net.ipv4.tcp_fastopen'
+	option value '3'
+
+config sysctl
+	option name 'net.netfilter.nf_conntrack_tcp_timeout_established'
+	option value '1800'
+
+config sysctl
+	option name 'net.netfilter.nf_conntrack_tcp_timeout_time_wait'
+	option value '30'
+

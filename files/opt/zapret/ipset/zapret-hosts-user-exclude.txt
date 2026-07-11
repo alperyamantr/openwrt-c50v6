@@ -1,0 +1,6 @@
+# exclude listttmobil.com.tr
+turktelekom.com.tr
+turktelekom.com.tr
+ttmobil.com.tr
+netmera.com
+ttnet.com.tr

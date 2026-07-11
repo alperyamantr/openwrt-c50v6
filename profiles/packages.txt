@@ -2,7 +2,6 @@ luci
 dnsmasq-full
 firewall4
 nftables
-kmod-nft-offload
 ca-bundle
 
 -uhttpd

@@ -1,0 +1,62 @@
+
+config dnsmasq
+	option domainneeded '1'
+	option filterwin2k '1'
+	option localise_queries '1'
+	option rebind_protection '0'
+	option local '/lan/'
+	option domain 'lan'
+	option nonegcache '1'
+	option cachesize '1250'
+	option authoritative '1'
+	option readethers '1'
+	option leasefile '/tmp/dhcp.leases'
+	option localservice '1'
+	option ednspacket_max '1232'
+	option filter_aaaa '1'
+	option noresolv '1'
+	list server '94.140.14.14'
+	list server '94.140.15.15'
+	option allservers '1'
+	option min_cache_ttl '300'
+	option max_cache_ttl '3600'
+	option quietdhcp '1'
+
+config dhcp 'lan'
+	option interface 'lan'
+	option start '100'
+	option limit '150'
+	option leasetime '48h'
+	option ra_manage '0'
+
+config dhcp 'wan'
+	option interface 'wan'
+	option ignore '1'
+	option leasetime '12h'
+	option start '100'
+	option limit '150'
+
+config host
+	option mac '8C:AA:CE:7A:AD:39'
+	option ip '192.168.1.102'
+	option name 'Redmi-Note-10S'
+	option leasetime '48h'
+
+config host
+	option mac 'A4:F0:5E:4D:72:31'
+	option ip '192.168.1.165'
+	option name 'OPPO-A5-2020'
+	option leasetime '48h'
+
+config host
+	option mac 'B0:81:01:EF:02:81'
+	option ip '192.168.1.108'
+	option name 'HONOR-X9a-5G'
+	option leasetime '48h'
+
+config host
+	option mac '2E:46:EA:A3:AC:97'
+	option ip '192.168.1.176'
+	option name 'Onvo-TV'
+	option leasetime '48h'
+

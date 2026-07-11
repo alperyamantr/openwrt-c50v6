@@ -1,0 +1,31 @@
+# OpenWrt build output
+openwrt/
+bin/
+build_dir/
+staging_dir/
+tmp/
+dl/
+logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup
+*.bak
+*.orig
+*.rej
+
+# Router backups
+backup/
+
+# Python
+__pycache__/
+
+# Temporary
+*.tmp
+*.log

@@ -1,0 +1,66 @@
+# Sosyal Medya & Ýletiþim
+instagram.com
+cdninstagram.com
+facebook.com
+fbcdn.net
+x.com
+twitter.com
+twimg.com
+t.co
+abs.twimg.com
+pbs.twimg.com
+video.twimg.com
+discord.com
+discordapp.com
+discord.gg
+discordapp.net
+reddit.com
+redditmedia.com
+
+# Video & Yayýn
+youtube.com
+youtu.be
+googlevideo.com
+manifest.googlevideo.com
+ytimg.com
+i.ytimg.com
+s.ytimg.com
+yt3.ggpht.com
+twitch.tv
+twitchapps.com
+jtvnw.net
+twitchsvc.net
+
+# Oyun
+store.steampowered.com
+steamcommunity.com
+steamstatic.com
+steampowered.com
+steam.tv
+epicgames.com
+unrealengine.com
+fortnite.com
+eaplay.com
+origin.com
+ea.com
+battlenet.com
+blizzard.com
+riotgames.com
+leagueoflegends.com
+valorant.com
+
+# Film & Dizi
+netflix.com
+nflxext.com
+nflximg.net
+nflxvideo.net
+primevideo.com
+amazon.com
+mubi.com
+gain.tv
+blutv.com
+exxen.com
+tabii.com
+
+# Genel
+cloudflare.com

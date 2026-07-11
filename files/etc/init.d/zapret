@@ -1,0 +1,74 @@
+#!/bin/sh /etc/rc.common
+START=99
+STOP=10
+start() {
+    killall nfqws 2>/dev/null
+    nft delete table inet zapret 2>/dev/null
+    modprobe nfnetlink_queue 2>/dev/null
+    /opt/zapret/nfqws \
+        --qnum=200 \
+        --user=daemon \
+        --daemon \
+        --bind-fix4 \
+        --filter-tcp=443 \
+        --dpi-desync=fake,multisplit \
+        --dpi-desync-split-pos=1 \
+        --dpi-desync-ttl=3 \
+        --dpi-desync-repeats=3 \
+        --dpi-desync-fooling=md5sig,badsum \
+        --dpi-desync-fake-tls=/opt/zapret/files/fake/tls_clienthello_www_google_com.bin \
+        --new \
+        --filter-tcp=80 \
+        --dpi-desync=fake,multisplit \
+        --dpi-desync-ttl=3 \
+        --dpi-desync-repeats=3 \
+        --dpi-desync-split-pos=method+2 \
+        --dpi-desync-fooling=md5sig,badsum \
+        --new \
+        --filter-udp=443 \
+        --dpi-desync=fake \
+        --dpi-desync-ttl=3 \
+        --dpi-desync-repeats=3 \
+        --dpi-desync-any-protocol \
+        --dpi-desync-cutoff=n2 \
+        --dpi-desync-fake-quic=/opt/zapret/files/fake/quic_initial_www_google_com.bin \
+        --new \
+        --filter-udp=19294-19344,50000-50100 \
+        --dpi-desync=fake \
+        --dpi-desync-ttl=3 \
+        --dpi-desync-repeats=3 \
+        --dpi-desync-any-protocol \
+        --dpi-desync-cutoff=n2 \
+        --dpi-desync-fake-unknown-udp=/opt/zapret/files/fake/discord-ip-discovery-with-port.bin \
+        --new \
+        --filter-udp=3478,3479,3480 \
+        --dpi-desync=fake \
+        --dpi-desync-ttl=3 \
+        --dpi-desync-repeats=3 \
+        --dpi-desync-any-protocol \
+        --dpi-desync-cutoff=n2 \
+        --dpi-desync-fake-unknown-udp=/opt/zapret/files/fake/stun.bin
+
+    nft add table inet zapret 2>/dev/null
+    nft add chain inet zapret forward '{ type filter hook forward priority mangle; }' 2>/dev/null
+
+    # === IP BYPASS LISTESI ===
+    BYPASS_IPS="/etc/zapret-bypass-ips.txt"
+    if [ -f "$BYPASS_IPS" ]; then
+        while IFS= read -r ip; do
+            [ -z "$ip" ] && continue
+            [ "${ip#\#}" != "$ip" ] && continue
+            nft add rule inet zapret forward ip daddr "$ip" accept 2>/dev/null
+        done < "$BYPASS_IPS"
+    fi
+    # === ZAPRET QUEUE ===
+    nft add rule inet zapret forward tcp dport 443 ct original packets 1-6 queue flags bypass to 200 2>/dev/null
+    nft add rule inet zapret forward tcp dport 80 ct original packets 1-6 queue flags bypass to 200 2>/dev/null
+    nft add rule inet zapret forward udp dport 443 ct original packets 1-6 queue flags bypass to 200 2>/dev/null
+    nft add rule inet zapret forward udp dport '{19294-19344, 50000-50100}' ct original packets 1-6 queue flags bypass to 200 2>/dev/null
+    nft add rule inet zapret forward udp dport '{3478, 3479, 3480}' ct original packets 1-6 queue flags bypass to 200 2>/dev/null
+}
+stop() {
+    killall nfqws 2>/dev/null
+    nft delete table inet zapret 2>/dev/null
+}

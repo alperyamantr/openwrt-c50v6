@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/etc/init.d/zapret enable
+/etc/init.d/zapret restart
+
+exit 0

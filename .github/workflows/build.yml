@@ -3,6 +3,9 @@ name: Build OpenWrt 25.12.5
 on:
   workflow_dispatch:
 
+env:
+  OPENWRT_VERSION: v25.12.5
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -17,39 +20,52 @@ jobs:
           sudo apt install -y \
             build-essential clang flex g++ gawk gcc-multilib gettext \
             git libncurses-dev libssl-dev python3-setuptools rsync \
-            swig unzip zlib1g-dev file wget
+            swig unzip zlib1g-dev file wget curl
 
       - name: Clone OpenWrt
         run: |
-          git clone --depth=1 --branch v25.12.5 https://github.com/openwrt/openwrt.git
+          git clone --depth=1 --branch ${OPENWRT_VERSION} https://github.com/openwrt/openwrt.git
 
-      - name: Copy profile
+      - name: Update feeds
+        working-directory: openwrt
         run: |
-          cp profiles/c50v6-minimal.config openwrt/.config
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Prepare build
+        working-directory: openwrt
+        run: |
+          chmod +x ../scripts/*.sh
+          ../scripts/prepare.sh
 
       - name: Copy custom files
         run: |
           mkdir -p openwrt/files
           cp -a files/. openwrt/files/
 
-      - name: Prepare config
+      - name: Optimize build
+        working-directory: openwrt
         run: |
-          cd openwrt
-          make defconfig
+          ../scripts/optimize.sh
 
       - name: Download sources
+        working-directory: openwrt
         run: |
-          cd openwrt
           make download -j$(nproc)
 
       - name: Build firmware
+        working-directory: openwrt
         run: |
-          cd openwrt
           make -j$(nproc)
+
+      - name: Generate checksums
+        working-directory: openwrt/bin/targets
+        run: |
+          find . -type f -exec sha256sum {} \; > sha256sums.txt
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: openwrt-c50v6
+          name: openwrt-c50v6-${{ github.run_number }}
           path: |
-            openwrt/bin/targets/**/*
+            openwrt/bin/targets/**
