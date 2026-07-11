@@ -1,0 +1,22 @@
+# OpenWrt shell scriptleri her zaman LF (Unix) satır sonu kullanmalı
+# Windows'ta git autocrlf açık olsa bile bu kurallar geçerlidir.
+
+# Tüm dosyalar için varsayılan: otomatik
+* text=auto
+
+# Shell scriptleri -> zorla LF
+*.sh        text eol=lf
+files/etc/init.d/*          text eol=lf
+files/etc/uci-defaults/*    text eol=lf
+files/usr/bin/*             text eol=lf
+files/etc/rc.local          text eol=lf
+files/etc/zapret-bypass-ips.txt  text eol=lf
+files/etc/sysupgrade.conf        text eol=lf
+
+# Config dosyaları -> LF
+files/etc/dnsmasq.conf      text eol=lf
+files/etc/dnsmasq.d/*.conf  text eol=lf
+files/etc/sysctl.conf       text eol=lf
+
+# Binary dosyalara dokunma
+*.bin   binary
