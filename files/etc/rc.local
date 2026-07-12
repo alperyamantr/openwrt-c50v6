@@ -1,24 +1,11 @@
 #!/bin/sh
-# Put your custom commands here that should be executed once
-# the system init finished.
 
-# nfqws executable bit'ini zapret baslamadan once set et
-chmod +x /opt/zapret/nfqws
-touch /tmp/hagezi_multi.conf
-
-# Internet geldikten sonra listeyi arka planda cekip sessizce guncelleyen kisim:
 (
-    # DNS ve agin tam oturmasi icin 45 saniye arka planda bekler
     sleep 25
 
-    # Dogrulama ozellikli guncelleme betigini calistirir:
     /usr/bin/hagezi-guncelle
 
-    # Conntrack limitini gaming icin genisletir:
-    sysctl -w net.netfilter.nf_conntrack_max=32768
-    
-    # Dusuk gecikme modunu aktif eder:
-    sysctl -w net.ipv4.tcp_low_latency=1
+    sysctl -w net.netfilter.nf_conntrack_max=32768 >/dev/null
 ) &
 
 exit 0

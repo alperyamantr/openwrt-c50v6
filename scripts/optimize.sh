@@ -4,16 +4,15 @@ set -e
 echo "==> Optimizing build..."
 
 # Remove temporary patch files
-find . -name "*.orig" -delete
-find . -name "*.rej" -delete
+find . -type f \( -name "*.orig" -o -name "*.rej" \) -delete
 
-# Ensure scripts are executable
+# Ensure build scripts are executable
 chmod +x ../scripts/*.sh
 
-# Ensure custom files are executable
-[ -d ./files/etc/init.d ] && find ./files/etc/init.d -type f -exec chmod +x {} +
-[ -d ./files/etc/uci-defaults ] && find ./files/etc/uci-defaults -type f -exec chmod +x {} +
-[ -d ./files/usr/bin ] && find ./files/usr/bin -type f -exec chmod +x {} +
-[ -f ./files/opt/zapret/nfqws ] && chmod +x ./files/opt/zapret/nfqws
+# Ensure OpenWrt custom scripts are executable
+find ./files/etc/init.d ./files/etc/uci-defaults ./files/usr/bin -type f -exec chmod +x {} + 2>/dev/null || true
+
+# Ensure nfqws is executable
+chmod +x ./files/opt/zapret/nfqws 2>/dev/null || true
 
 echo "==> Optimization complete."

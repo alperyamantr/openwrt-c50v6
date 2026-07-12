@@ -1,6 +1,11 @@
 #!/bin/sh /etc/rc.common
+
 START=10
+
 start() {
+    mkdir -p /etc/dnsmasq.d
+
     touch /tmp/hagezi_multi.conf
+
     ln -sf /tmp/hagezi_multi.conf /etc/dnsmasq.d/hagezi_multi.conf
 }

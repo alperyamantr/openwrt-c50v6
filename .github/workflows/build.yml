@@ -51,26 +51,28 @@ jobs:
       - name: Show target
         working-directory: openwrt
         run: |
-          grep CONFIG_TARGET .config
+          grep '^CONFIG_TARGET' .config
 
       - name: Download sources
         working-directory: openwrt
         run: |
-          make download -j$(nproc)
+          make download -j"$(nproc)"
 
       - name: Build firmware
         working-directory: openwrt
         run: |
-          make -j$(nproc)
+          make -j"$(nproc)" V=s
 
       - name: Generate checksums
         working-directory: openwrt/bin/targets
         run: |
-          find . -type f -exec sha256sum {} \; > sha256sums.txt
+          find . -type f ! -name sha256sums.txt -exec sha256sum {} \; | sort > sha256sums.txt
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: openwrt-c50v6-${{ github.run_number }}
+          compression-level: 0
+          if-no-files-found: error
           path: |
             openwrt/bin/targets/**

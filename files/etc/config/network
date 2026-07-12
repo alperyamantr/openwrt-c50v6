@@ -1,11 +1,11 @@
 
+
 config interface 'loopback'
 	option device 'lo'
 	option proto 'static'
 	list ipaddr '127.0.0.1/8'
 
 config globals 'globals'
-	option dhcp_default_duid '0004284e29d15b2f4839a1a905cf128b576b'
 	option packet_steering '0'
 	option udp_conntrack_timeout '180'
 	option udp_conntrack_timeout_stream '180'
@@ -19,16 +19,13 @@ config interface 'lan'
 
 config interface 'wan'
 	option device 'eth0.2'
-	option proto 'static'
+	option proto 'dhcp'
 	option peerdns '0'
 	option ipv6 '0'
 	option mtu '1500'
+	option metric '10'
 	list dns '94.140.14.14'
 	list dns '94.140.15.15'
-	option ipaddr '192.168.0.11'
-	option netmask '255.255.255.0'
-	option gateway '192.168.0.1'
-	option metric '10'
 
 config switch
 	option name 'switch0'
@@ -57,5 +54,3 @@ config device
 	option ifname 'eth0'
 	option vid '2'
 	option ipv6 '0'
-	option macaddr '48:22:54:0E:66:54'
-
