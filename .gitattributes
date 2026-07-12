@@ -2,7 +2,7 @@
 # Windows'ta git autocrlf açık olsa bile bu kurallar geçerlidir.
 
 # Tüm dosyalar için varsayılan: otomatik
-* text=auto eol=lf
+* text=auto 
 
 # Shell scriptleri -> zorla LF
 *.sh        text eol=lf
