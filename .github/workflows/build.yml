@@ -32,11 +32,15 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Prepare build
+     - name: Prepare build
         working-directory: openwrt
         run: |
           chmod +x ../scripts/*.sh
           ../scripts/prepare.sh
+          echo "==> LuCI"
+          grep "CONFIG_PACKAGE_luci" .config || true
+          echo "==> Disabled"
+          grep "CONFIG_PACKAGE_ppp\|CONFIG_PACKAGE_odhcp" .config || true
 
       - name: Copy custom files
         run: |
