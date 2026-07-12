@@ -32,7 +32,7 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-     - name: Prepare build
+      - name: Prepare build
         working-directory: openwrt
         run: |
           chmod +x ../scripts/*.sh
