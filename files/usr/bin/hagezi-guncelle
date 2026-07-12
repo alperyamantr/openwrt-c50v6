@@ -1,0 +1,36 @@
+#!/bin/sh
+
+URL="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/dnsmasq/mini.txt"
+TARGET="/tmp/hagezi_multi.conf"
+TEMP_FILE="${TARGET}.tmp"
+
+logger -t hagezi "Blocklist update started..."
+
+mkdir -p "$(dirname "$TARGET")"
+
+if wget --no-check-certificate -qO "$TEMP_FILE" "$URL"; then
+    if [ -s "$TEMP_FILE" ] && grep -qE "^(server|address|local)=" "$TEMP_FILE"; then
+        mv -f "$TEMP_FILE" "$TARGET"
+
+        if /etc/init.d/dnsmasq restart; then
+            logger -t hagezi "Blocklist updated successfully."
+            echo "[+] Blocklist updated successfully!"
+            exit 0
+        else
+            logger -t hagezi "Dnsmasq restart failed."
+            echo "[-] Error: Dnsmasq restart failed."
+        fi
+    else
+        logger -t hagezi "Downloaded file is invalid or empty."
+        echo "[-] Error: Downloaded file is invalid or empty."
+    fi
+else
+    logger -t hagezi "Download failed."
+    echo "[-] Error: Download failed."
+fi
+
+rm -f "$TEMP_FILE"
+
+[ -f "$TARGET" ] || touch "$TARGET"
+
+exit 1

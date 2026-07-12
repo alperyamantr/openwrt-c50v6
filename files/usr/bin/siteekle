@@ -1,0 +1,37 @@
+#!/bin/sh
+if [ -z "$1" ]; then
+    echo "Kullanım: siteekle domain.com"
+    exit 1
+fi
+
+DOMAIN=$(echo "$1" | tr 'A-Z' 'a-z' | xargs)
+BANNED_FILE="/etc/dnsmasq.d/banned.conf"
+
+# Klasör ve dosya kontrolü
+mkdir -p /etc/dnsmasq.d
+touch "$BANNED_FILE"
+
+# MÜKERRER KONTROLÜ
+if grep -Fq "address=/$DOMAIN/0.0.0.0" "$BANNED_FILE" 2>/dev/null; then
+    echo "[-] $DOMAIN zaten engelli listesinde var bro!"
+    exit 0
+fi
+
+# Sadece IPv4 engelleme kuralı
+echo "address=/$DOMAIN/0.0.0.0" >> "$BANNED_FILE"
+
+# Servisi yeniden başlat
+/etc/init.d/dnsmasq restart >/dev/null 2>&1
+
+# KESİN ÇÖZÜM: OpenWrt BusyBox uyumlu 1 saniyelik döngü
+TIMEOUT=0
+while ! nslookup localhost 127.0.0.1 >/dev/null 2>&1; do
+    sleep 1
+    TIMEOUT=$((TIMEOUT + 1))
+    if [ $TIMEOUT -gt 15 ]; then
+        echo "[!] Dnsmasq başlatılırken zaman aşımı oluştu."
+        exit 1
+    fi
+done
+
+echo "[+] $DOMAIN başarıyla banned.conf dosyasına eklendi ve sistem uykudan uyandı."

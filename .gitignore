@@ -1,6 +1,6 @@
 # OpenWrt build output
 openwrt/
-bin/
+/bin/
 build_dir/
 staging_dir/
 tmp/
