@@ -1,6 +1,7 @@
 luci-base
-luci-mod-status
+luci-mod-admin-full
 luci-mod-network
+luci-mod-status
 luci-mod-system
 luci-theme-bootstrap
 uhttpd
