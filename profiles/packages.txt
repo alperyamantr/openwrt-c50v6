@@ -1,6 +1,12 @@
-luci-light
+luci-base
+luci-mod-status
+luci-mod-network
+luci-mod-system
+luci-theme-bootstrap
 uhttpd
 rpcd
+rpcd-mod-file
+rpcd-mod-rpcsys
 dnsmasq-full
 firewall4
 ca-bundle
