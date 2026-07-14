@@ -2,10 +2,13 @@
 
 (
     sleep 25
-
     /usr/bin/hagezi-guncelle
-
-    sysctl -w net.netfilter.nf_conntrack_max=32768 >/dev/null
+    sysctl -w net.netfilter.nf_conntrack_max=2048 >/dev/null
 ) &
+
+echo 512 > /proc/sys/net/netfilter/nfnetlink_queue_maxlen 2>/dev/null
+
+/etc/init.d/cron enable 2>/dev/null || true
+/etc/init.d/cron restart 2>/dev/null || true
 
 exit 0

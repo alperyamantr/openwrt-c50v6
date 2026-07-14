@@ -1,9 +1,17 @@
 #!/bin/sh
+# /etc/uci-defaults/02-hagezi
 
-/etc/init.d/hagezi_init enable
-/etc/init.d/hagezi_init restart
+# Hagezi scriptine çalıştırma izni
+chmod +x /usr/bin/hagezi-guncelle 2>/dev/null || true
 
-/etc/init.d/cron enable
-/etc/init.d/cron restart
+# İlk açılışta boş dosya oluştur (hagezi-guncelle bunu dolduracak)
+touch /tmp/hagezi_multi.conf
+
+# Symlink oluştur
+mkdir -p /etc/dnsmasq.d
+ln -sf /tmp/hagezi_multi.conf /etc/dnsmasq.d/hagezi_multi.conf
+
+# İlk indirmeyi dene (network hazırsa)
+/usr/bin/hagezi-guncelle 2>/dev/null || true
 
 exit 0

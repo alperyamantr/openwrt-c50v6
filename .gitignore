@@ -1,11 +1,24 @@
 # OpenWrt build output
 openwrt/
 /bin/
-build_dir/
-staging_dir/
-tmp/
-dl/
-logs/
+/build_dir/
+/staging_dir/
+/tmp/
+/dl/
+/logs/
+/feeds/
+/key-build*
+*.bin
+*.trx
+*.img
+*.gz
+*.xz
+*.zip
+
+# OpenWrt config
+.config.old
+.config.cmd
+.config.dep
 
 # IDE
 .vscode/
@@ -19,13 +32,23 @@ Thumbs.db
 *.bak
 *.orig
 *.rej
+*.patch
 
 # Router backups
 backup/
+*.tar.gz
 
 # Python
 __pycache__/
+*.pyc
+*.pyo
 
 # Temporary
 *.tmp
 *.log
+*.swp
+*.swo
+*~
+
+# Diffconfig
+diffconfig.txt

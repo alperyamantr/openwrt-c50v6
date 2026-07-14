@@ -1,27 +1,27 @@
 #!/bin/sh
 
-URL="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/dnsmasq/pro.mini.txt"
+URL="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/dnsmasq/light.txt"
 TARGET="/tmp/hagezi_multi.conf"
 TEMP_FILE="/tmp/hagezi_download.tmp"
 
 logger -t hagezi "Blocklist update started..."
 
-if wget -qO "$TEMP_FILE" "$URL"; then
-    if [ -s "$TEMP_FILE" ]; then
+if wget --no-check-certificate -qO "$TEMP_FILE" "$URL"; then
+    if [ -s "$TEMP_FILE" ] && grep -q "address=" "$TEMP_FILE"; then
         mv "$TEMP_FILE" "$TARGET"
         /etc/init.d/dnsmasq reload
-        logger -t hagezi "Blocklist updated successfully."
+        logger -t hagezi "Blocklist updated successfully. Dnsmasq reload."
         echo "[+] Blocklist updated successfully!"
         exit 0
     else
-        logger -t hagezi "Downloaded file is empty."
-        echo "[-] Error: Downloaded file is empty."
+        logger -t hagezi "Downloaded file is invalid or empty."
+        echo "[-] Error: Downloaded file is invalid or empty."
     fi
 else
-    logger -t hagezi "Download failed."
+    logger -t hagezi "Download failed (wget exit code $?)."
     echo "[-] Error: Download failed."
 fi
 
 rm -f "$TEMP_FILE"
-touch "$TARGET"
+[ -f "$TARGET" ] || touch "$TARGET"
 exit 1

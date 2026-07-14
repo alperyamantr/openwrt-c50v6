@@ -1,45 +1,44 @@
 #!/bin/sh /etc/rc.common
-
 START=99
 STOP=10
+USE_PROCD=1
 
-start() {
-    killall -q nfqws 2>/dev/null
-    nft delete table inet zapret 2>/dev/null
-
+start_service() {
+    stop_service > /dev/null 2>&1
     modprobe -q nfnetlink_queue 2>/dev/null
 
-    /opt/zapret/nfqws \
-        --qnum=200 \
+    procd_open_instance
+    procd_set_param command /opt/zapret/nfqws \
+        --qnum=100 \
         --user=daemon \
-        --daemon \
         --bind-fix4 \
         --filter-tcp=443 \
-        --dpi-desync=fake,multisplit \
+        --dpi-desync=fake,split \
         --dpi-desync-split-pos=1 \
-        --dpi-desync-ttl=3 \
-        --dpi-desync-repeats=3 \
+        --dpi-desync-ttl=4 \
+        --dpi-desync-repeats=2 \
         --dpi-desync-fooling=badsum \
         --dpi-desync-fake-tls=/opt/zapret/files/fake/tls_clienthello_www_google_com.bin \
+        --dpi-desync-cutoff=d4 \
         --new \
         --filter-tcp=80 \
-        --dpi-desync=fake,multisplit \
+        --dpi-desync=fake,split \
         --dpi-desync-split-pos=method+2 \
-        --dpi-desync-ttl=3 \
-        --dpi-desync-repeats=3 \
+        --dpi-desync-ttl=4 \
+        --dpi-desync-repeats=2 \
         --dpi-desync-fooling=badsum \
         --new \
         --filter-udp=443 \
         --dpi-desync=fake \
-        --dpi-desync-ttl=3 \
-        --dpi-desync-repeats=3 \
+        --dpi-desync-ttl=2 \
+        --dpi-desync-repeats=6 \
         --dpi-desync-any-protocol \
-        --dpi-desync-cutoff=n2 \
+        --dpi-desync-cutoff=d4 \
         --dpi-desync-fake-quic=/opt/zapret/files/fake/quic_initial_www_google_com.bin \
         --new \
-        --filter-udp=19294-19344,50000-50100 \
+        --filter-udp=19294-19344,50000-60000 \
         --dpi-desync=fake \
-        --dpi-desync-ttl=3 \
+        --dpi-desync-ttl=4 \
         --dpi-desync-repeats=3 \
         --dpi-desync-any-protocol \
         --dpi-desync-cutoff=n2 \
@@ -47,37 +46,45 @@ start() {
         --new \
         --filter-udp=3478,3479,3480 \
         --dpi-desync=fake \
-        --dpi-desync-ttl=3 \
+        --dpi-desync-ttl=4 \
         --dpi-desync-repeats=3 \
         --dpi-desync-any-protocol \
         --dpi-desync-cutoff=n2 \
         --dpi-desync-fake-unknown-udp=/opt/zapret/files/fake/stun.bin
+    procd_set_param respawn 3600 5 5
+    procd_set_param stdout 0
+    procd_set_param stderr 0
+    procd_set_param oom_score -1000
+    procd_close_instance
 
-    nft add table inet zapret 2>/dev/null
-    nft add chain inet zapret forward '{ type filter hook forward priority mangle; }' 2>/dev/null
+    nft add table inet zapret 2>/dev/null || true
+    nft add chain inet zapret forward '{ type filter hook forward priority -150; policy accept; }' 2>/dev/null || true
 
-    # Bypass IP list
-    BYPASS_IPS="/etc/zapret-bypass-ips.txt"
+    nft add set inet zapret udp_ports '{ type inet_service; flags interval; }' 2>/dev/null || true
+    nft add element inet zapret udp_ports '{ 19294-19344, 50000-60000, 3478-3480 }' 2>/dev/null || true
 
+    local BYPASS_IPS="/etc/zapret-bypass-ips.txt"
     if [ -f "$BYPASS_IPS" ]; then
         while IFS= read -r ip; do
             case "$ip" in
                 ""|\#*) continue ;;
+                *:*) nft add rule inet zapret forward ip6 daddr "$ip" accept 2>/dev/null ;;
+                *) nft add rule inet zapret forward ip daddr "$ip" accept 2>/dev/null ;;
             esac
-
-            nft add rule inet zapret forward ip daddr "$ip" accept 2>/dev/null
         done < "$BYPASS_IPS"
     fi
 
-    # Queue rules
-    nft add rule inet zapret forward tcp dport 443 ct original packets 1-6 queue flags bypass to 200 2>/dev/null
-    nft add rule inet zapret forward tcp dport 80 ct original packets 1-6 queue flags bypass to 200 2>/dev/null
-    nft add rule inet zapret forward udp dport 443 ct original packets 1-6 queue flags bypass to 200 2>/dev/null
-    nft add rule inet zapret forward udp dport '{19294-19344,50000-50100}' ct original packets 1-6 queue flags bypass to 200 2>/dev/null
-    nft add rule inet zapret forward udp dport '{3478,3479,3480}' ct original packets 1-6 queue flags bypass to 200 2>/dev/null
+    nft add rule inet zapret forward ip protocol tcp tcp dport 443 ct original packets 1-4 queue flags bypass to 100 2>/dev/null
+    nft add rule inet zapret forward ip protocol tcp tcp dport 80 ct original packets 1-4 queue flags bypass to 100 2>/dev/null
+    nft add rule inet zapret forward ip protocol udp udp dport 443 ct original packets 1-4 queue flags bypass to 100 2>/dev/null
+    nft add rule inet zapret forward ip protocol udp udp dport @udp_ports ct original packets 1-4 queue flags bypass to 100 2>/dev/null
 }
 
-stop() {
-    killall -q nfqws 2>/dev/null
-    nft delete table inet zapret 2>/dev/null
+stop_service() {
+    killall -q -9 nfqws 2>/dev/null
+    nft delete table inet zapret 2>/dev/null || true
+}
+
+service_triggers() {
+    procd_add_reload_trigger "zapret"
 }
