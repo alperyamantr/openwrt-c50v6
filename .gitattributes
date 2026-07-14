@@ -31,4 +31,5 @@ profiles/packages.txt       text eol=lf
 *.zip   binary
 
 # Zapret binary
-files/opt/zapret/nfqws      binary
+files/opt/zapret/nfqws      binary"*.md text eol=lf" 
+"files/etc/crontabs/root text eol=lf" 
