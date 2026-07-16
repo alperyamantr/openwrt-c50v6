@@ -1,0 +1,237 @@
+#!/bin/sh
+
+BANNED_FILE="/etc/dnsmasq.d/banned.conf"
+USOM_PAGES=50
+TEMP_FILE="/tmp/banned_usom.tmp"
+DATE=$(date '+%Y-%m-%d %H:%M')
+
+logger -t banned "Banned list update started..."
+
+# Telemetry + statik blok (sabit)
+STATIC_PART='# ============================================================
+#  STATIK ENGELLEMELER (MANUEL)
+# ============================================================
+
+# ============================================================
+#  WINDOWS / MICROSOFT TELEMETRY
+# ============================================================
+address=/vortex.data.microsoft.com/0.0.0.0
+address=/vortex-win.data.microsoft.com/0.0.0.0
+address=/v10.vortex-win.data.microsoft.com/0.0.0.0
+address=/v20.vortex-win.data.microsoft.com/0.0.0.0
+address=/eu.vortex-win.data.microsoft.com/0.0.0.0
+address=/vortex-sandbox.data.microsoft.com/0.0.0.0
+address=/v10.events.data.microsoft.com/0.0.0.0
+address=/v20.events.data.microsoft.com/0.0.0.0
+address=/watson.telemetry.microsoft.com/0.0.0.0
+address=/watson.microsoft.com/0.0.0.0
+address=/watson.live.com/0.0.0.0
+address=/telemetry.microsoft.com/0.0.0.0
+address=/sqm.telemetry.microsoft.com/0.0.0.0
+address=/telecommand.telemetry.microsoft.com/0.0.0.0
+address=/spynet2.microsoft.com/0.0.0.0
+address=/feedback.windows.com/0.0.0.0
+address=/ads.msn.com/0.0.0.0
+address=/bingads.microsoft.com/0.0.0.0
+address=/adnxs.com/0.0.0.0
+address=/nav.smartscreen.microsoft.com/0.0.0.0
+
+# ============================================================
+#  AMD & NVIDIA TELEMETRY
+# ============================================================
+address=/telemetry.amd.com/0.0.0.0
+address=/crash.amd.com/0.0.0.0
+address=/telemetry.nvidia.com/0.0.0.0
+address=/self.events.data.nvidia.com/0.0.0.0
+address=/events.gfe.nvidia.com/0.0.0.0
+address=/crashreport.nvidia.com/0.0.0.0
+
+# ============================================================
+#  GOOGLE VERI TOPLAMA
+# ============================================================
+address=/google-analytics.com/0.0.0.0
+address=/ssl.google-analytics.com/0.0.0.0
+address=/analytics.google.com/0.0.0.0
+address=/uma.googleapis.com/0.0.0.0
+address=/app-measurement.com/0.0.0.0
+address=/crashlytics.com/0.0.0.0
+address=/adservice.google.com/0.0.0.0
+address=/adservice.google.com.tr/0.0.0.0
+address=/googleadservices.com/0.0.0.0
+address=/pagead2.googlesyndication.com/0.0.0.0
+address=/doubleclick.net/0.0.0.0
+address=/googleoptimize.com/0.0.0.0
+
+# ============================================================
+#  ADOBE TELEMETRI
+# ============================================================
+address=/activate.adobe.com/0.0.0.0
+address=/genuine.adobe.com/0.0.0.0
+address=/prod.adobegenuine.com/0.0.0.0
+address=/omtrdc.net/0.0.0.0
+address=/2o7.net/0.0.0.0
+
+# ============================================================
+#  SOSYAL MEDYA TRACKER
+# ============================================================
+address=/connect.facebook.net/0.0.0.0
+address=/pixel.facebook.com/0.0.0.0
+address=/analytics.twitter.com/0.0.0.0
+address=/analytics.tiktok.com/0.0.0.0
+address=/ads.tiktok.com/0.0.0.0
+address=/px.ads.linkedin.com/0.0.0.0
+address=/ct.pinterest.com/0.0.0.0
+
+# ============================================================
+#  SESSION RECORDING / ICERIK ONERILERI
+# ============================================================
+address=/cdn.taboola.com/0.0.0.0
+address=/trc.taboola.com/0.0.0.0
+address=/odb.outbrain.com/0.0.0.0
+address=/dis.criteo.com/0.0.0.0
+address=/clarity.ms/0.0.0.0
+address=/static.hotjar.com/0.0.0.0
+address=/insights.hotjar.com/0.0.0.0
+address=/edge.fullstory.com/0.0.0.0
+
+# ============================================================
+#  GENEL ANALYTICS
+# ============================================================
+address=/api.segment.io/0.0.0.0
+address=/api.mixpanel.com/0.0.0.0
+address=/api.amplitude.com/0.0.0.0
+
+# ============================================================
+#  GAMING TELEMETRY
+# ============================================================
+address=/datarouter.ol.epicgames.com/0.0.0.0
+address=/telemetry.epicgames.com/0.0.0.0
+address=/telemetry.ea.com/0.0.0.0
+address=/telemetry.ubisoft.com/0.0.0.0
+address=/telemetry.battle.net/0.0.0.0
+
+# ============================================================
+#  SAMSUNG / LG / XIAOMI / APPLE IOT TELEMETRI
+# ============================================================
+address=/samsungacr.com/0.0.0.0
+address=/lgtvsdp.com/0.0.0.0
+address=/log.ad.xiaomi.com/0.0.0.0
+address=/tracking.miui.com/0.0.0.0
+address=/metrics.apple.com/0.0.0.0
+
+# ============================================================
+#  TURKIYE -- PHISHING / DOLANDIRICILIK (MANUEL)
+# ============================================================
+address=/e-devlet-kapisi-yardim.com/0.0.0.0
+address=/hgsdolumu.link/0.0.0.0
+address=/ptt-hgs-tahsilat.com/0.0.0.0
+address=/e-devletkapisi.online/0.0.0.0
+address=/kgm-gov-tir.bond/0.0.0.0
+address=/uyapuzlastirma.org/0.0.0.0
+address=/adaletmaliye.com/0.0.0.0
+address=/garantibbvakredibasvuru.com/0.0.0.0
+address=/isbank-giris.net/0.0.0.0
+address=/akbank-online.net/0.0.0.0
+address=/trendyoladresimiguncelle.com/0.0.0.0
+address=/meritbet818.com/0.0.0.0
+
+# ============================================================
+#  MIRKANCAL TR REKLAM LISTESI
+# ============================================================
+address=/admatic.com.tr/0.0.0.0
+address=/reklamport.com/0.0.0.0
+address=/medyanet.com.tr/0.0.0.0
+address=/medyanetads.com/0.0.0.0
+address=/adhood.com/0.0.0.0
+address=/adphorus.com/0.0.0.0
+address=/taboola.com/0.0.0.0
+address=/mgid.com/0.0.0.0
+address=/outbrain.com/0.0.0.0
+address=/criteo.com/0.0.0.0
+address=/bilyoner.com/0.0.0.0
+address=/oley.com/0.0.0.0
+address=/mynet.com/0.0.0.0
+address=/donanimhaber.com/0.0.0.0
+address=/eksisozluk.com/0.0.0.0
+
+'
+
+# Mevcut dosyadan SITEEKLE kısmını al
+SITEEKLE_PART=""
+if grep -Fq "# ==SITEEKLE-BASLANGIC==" "$BANNED_FILE" 2>/dev/null && \
+   grep -Fq "# ==SITEEKLE-BITIS==" "$BANNED_FILE" 2>/dev/null; then
+    SITEEKLE_PART=$(sed -n '/# ==SITEEKLE-BASLANGIC==/,/# ==SITEEKLE-BITIS==/p' "$BANNED_FILE" 2>/dev/null)
+fi
+
+# USOM API'den veri çek
+> "$TEMP_FILE"
+
+for page in $(seq 1 $USOM_PAGES); do
+    RESPONSE=$(wget --no-check-certificate -qO - "https://siberguvenlik.gov.tr/api/address/index?page=$page" 2>/dev/null || echo "")
+
+    if [ -n "$RESPONSE" ] && echo "$RESPONSE" | grep -q '"models"'; then
+        PAGE_DOMAINS=$(echo "$RESPONSE" | grep -o '"url":"[^"]*"' | \
+            sed 's/"url":"//;s/"$//' | \
+            sed 's|^[a-zA-Z]*://||' | \
+            sed 's|/.*||' | \
+            sed 's/:.*//' | \
+            grep -oE '^[a-zA-Z0-9][a-zA-Z0-9.-]*\.[a-zA-Z]{2,}$' | \
+            grep -v '^[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}$' | \
+            tr '[:upper:]' '[:lower:]' | sort -u)
+
+        if [ -n "$PAGE_DOMAINS" ]; then
+            echo "$PAGE_DOMAINS" >> "$TEMP_FILE"
+        fi
+    fi
+done
+
+# Benzersiz domainler
+UNIQUE_DOMAINS=$(sort -u "$TEMP_FILE" | grep -v '^$')
+
+# Dosyayı yaz
+{
+    echo "$STATIC_PART"
+    
+    # SITEEKLE kısmı varsa ekle
+    if [ -n "$SITEEKLE_PART" ]; then
+        echo ""
+        echo "$SITEEKLE_PART"
+    else
+        echo ""
+        echo "# ==SITEEKLE-BASLANGIC=="
+        echo "# ==SITEEKLE-BITIS=="
+    fi
+    
+    echo ""
+    echo "# ==USOM-BASLANGIC=="
+    echo "# ============================================================"
+    echo "#  USOM - ZARARLI DOMAIN LISTESI (OTOMATIK)"
+    echo "#  Kaynak : USOM API"
+    echo "#  Tarih  : $DATE"
+    echo "#  Adet   : HESAPLANACAK"
+    echo "# ============================================================"
+    echo ""
+    
+    FINAL_COUNT=0
+    for domain in $UNIQUE_DOMAINS; do
+        if ! echo "$STATIC_PART" | grep -q "/$domain/" && \
+           ! echo "$SITEEKLE_PART" | grep -q "/$domain/"; then
+            echo "address=/$domain/0.0.0.0"
+            FINAL_COUNT=$((FINAL_COUNT + 1))
+        fi
+    done
+    
+    echo ""
+    echo "# ==USOM-BITIS=="
+} > "${BANNED_FILE}.tmp"
+
+# Adet sayısını güncelle
+sed -i "s/#  Adet   : HESAPLANACAK/#  Adet   : $FINAL_COUNT/" "${BANNED_FILE}.tmp"
+
+mv "${BANNED_FILE}.tmp" "$BANNED_FILE"
+rm -f "$TEMP_FILE"
+
+/etc/init.d/dnsmasq reload
+
+logger -t banned "Update completed. $FINAL_COUNT USOM domains added."
+echo "[+] banned.conf güncellendi. $FINAL_COUNT USOM domaini eklendi."

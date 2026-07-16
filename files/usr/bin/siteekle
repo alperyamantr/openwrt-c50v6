@@ -16,14 +16,19 @@ if grep -Fq "address=/$DOMAIN/0.0.0.0" "$BANNED_FILE" 2>/dev/null; then
     exit 0
 fi
 
-# Yeni domaini marker'dan ÖNCE ekle (USOM bölümünün üstüne)
-if grep -Fq "# ==USOM-BITIS==" "$BANNED_FILE" 2>/dev/null; then
-    # Marker varsa, marker'dan önce ekle
-    sed -i "/# ==USOM-BITIS==/i address=/$DOMAIN/0.0.0.0" "$BANNED_FILE"
-else
-    # Marker yoksa, dosya sonuna ekle
-    echo "address=/$DOMAIN/0.0.0.0" >> "$BANNED_FILE"
+# Marker yoksa oluştur
+if ! grep -Fq "# ==SITEEKLE-BITIS==" "$BANNED_FILE" 2>/dev/null; then
+    # USOM marker'dan önce siteekle marker'ı ekle
+    if grep -Fq "# ==USOM-BASLANGIC==" "$BANNED_FILE" 2>/dev/null; then
+        sed -i "/# ==USOM-BASLANGIC==/i # ==SITEEKLE-BASLANGIC==\n# ==SITEEKLE-BITIS==" "$BANNED_FILE"
+    else
+        # Hiç marker yoksa dosya sonuna ekle
+        echo -e "# ==SITEEKLE-BASLANGIC==\n# ==SITEEKLE-BITIS==" >> "$BANNED_FILE"
+    fi
 fi
+
+# Yeni domaini SITEEKLE-BITIS marker'dan önce ekle
+sed -i "/# ==SITEEKLE-BITIS==/i address=/$DOMAIN/0.0.0.0" "$BANNED_FILE"
 
 /etc/init.d/dnsmasq restart >/dev/null 2>&1
 
