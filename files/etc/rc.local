@@ -1,14 +1,19 @@
 #!/bin/sh
+# Put your custom commands here that should be executed once
+# the system init finished.
 
+# hagezi_multi.conf için boş dosya ve symlink oluştur
+touch /tmp/hagezi_multi.conf
+ln -sf /tmp/hagezi_multi.conf /etc/dnsmasq.d/hagezi_multi.conf
+
+# nfqws executable bit'ini zapret başlamadan önce set et
+chmod +x /opt/zapret/nfqws
+
+# Internet geldikten sonra listeyi arka planda güncelle
 (
     sleep 25
     /usr/bin/hagezi-guncelle
     sysctl -w net.netfilter.nf_conntrack_max=2048 >/dev/null
 ) &
-
-echo 512 > /proc/sys/net/netfilter/nfnetlink_queue_maxlen 2>/dev/null
-
-/etc/init.d/cron enable 2>/dev/null || true
-/etc/init.d/cron restart 2>/dev/null || true
 
 exit 0
