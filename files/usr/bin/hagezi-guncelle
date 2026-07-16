@@ -1,10 +1,8 @@
 #!/bin/sh
 
 URL="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/dnsmasq/light.txt"
-TARGET="/etc/dnsmasq.d/hagezi.conf"
+TARGET="/tmp/hagezi_multi.conf"
 TEMP_FILE="/tmp/hagezi_download.tmp"
-
-mkdir -p /etc/dnsmasq.d
 
 logger -t hagezi "Blocklist update started..."
 
