@@ -5,7 +5,9 @@ USE_PROCD=1
 
 start_service() {
     stop_service > /dev/null 2>&1
+
     modprobe -q nfnetlink_queue 2>/dev/null
+    sysctl -w net.netfilter.nf_conntrack_max=8192 >/dev/null 2>&1 || true
 
     procd_open_instance
     procd_set_param command /opt/zapret/nfqws \
@@ -51,6 +53,7 @@ start_service() {
         --dpi-desync-any-protocol \
         --dpi-desync-cutoff=n2 \
         --dpi-desync-fake-unknown-udp=/opt/zapret/files/fake/stun.bin
+
     procd_set_param respawn 3600 5 5
     procd_set_param stdout 0
     procd_set_param stderr 0
@@ -58,26 +61,55 @@ start_service() {
     procd_close_instance
 
     nft add table inet zapret 2>/dev/null || true
-    nft add chain inet zapret forward '{ type filter hook forward priority -150; policy accept; }' 2>/dev/null || true
+    nft add chain inet zapret forward \
+        '{ type filter hook forward priority -150; policy accept; }' \
+        2>/dev/null || true
 
-    nft add set inet zapret udp_ports '{ type inet_service; flags interval; }' 2>/dev/null || true
-    nft add element inet zapret udp_ports '{ 19294-19344, 50000-60000, 3478-3480 }' 2>/dev/null || true
+    nft add set inet zapret udp_ports \
+        '{ type inet_service; flags interval; }' \
+        2>/dev/null || true
+
+    nft add element inet zapret udp_ports \
+        '{ 19294-19344, 50000-60000, 3478-3480 }' \
+        2>/dev/null || true
 
     local BYPASS_IPS="/etc/zapret-bypass-ips.txt"
+
     if [ -f "$BYPASS_IPS" ]; then
         while IFS= read -r ip; do
             case "$ip" in
                 ""|\#*) continue ;;
-                *:*) nft add rule inet zapret forward ip6 daddr "$ip" accept 2>/dev/null ;;
-                *) nft add rule inet zapret forward ip daddr "$ip" accept 2>/dev/null ;;
+                *:*)
+                    nft add rule inet zapret forward \
+                        ip6 daddr "$ip" accept 2>/dev/null
+                    ;;
+                *)
+                    nft add rule inet zapret forward \
+                        ip daddr "$ip" accept 2>/dev/null
+                    ;;
             esac
         done < "$BYPASS_IPS"
     fi
 
-    nft add rule inet zapret forward ip protocol tcp tcp dport 443 ct original packets 1-4 queue flags bypass to 100 2>/dev/null
-    nft add rule inet zapret forward ip protocol tcp tcp dport 80 ct original packets 1-4 queue flags bypass to 100 2>/dev/null
-    nft add rule inet zapret forward ip protocol udp udp dport 443 ct original packets 1-4 queue flags bypass to 100 2>/dev/null
-    nft add rule inet zapret forward ip protocol udp udp dport @udp_ports ct original packets 1-4 queue flags bypass to 100 2>/dev/null
+    nft add rule inet zapret forward \
+        ip protocol tcp tcp dport 443 \
+        ct original packets 1-4 \
+        queue flags bypass to 100 2>/dev/null
+
+    nft add rule inet zapret forward \
+        ip protocol tcp tcp dport 80 \
+        ct original packets 1-4 \
+        queue flags bypass to 100 2>/dev/null
+
+    nft add rule inet zapret forward \
+        ip protocol udp udp dport 443 \
+        ct original packets 1-4 \
+        queue flags bypass to 100 2>/dev/null
+
+    nft add rule inet zapret forward \
+        ip protocol udp udp dport @udp_ports \
+        ct original packets 1-4 \
+        queue flags bypass to 100 2>/dev/null
 }
 
 stop_service() {
