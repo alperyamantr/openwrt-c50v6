@@ -6,10 +6,17 @@ TEMP_FILE="/tmp/hagezi_download.tmp"
 
 logger -t hagezi "Blocklist update started..."
 
+# Symlink kontrolü (boot'ta kaybolmamasý için)
+[ -L /etc/dnsmasq.d/hagezi_multi.conf ] || \
+    ln -sf "$TARGET" /etc/dnsmasq.d/hagezi_multi.conf
+
+# Boþ dosya garantisi (dnsmasq çalýþsýn diye)
+[ -f "$TARGET" ] || touch "$TARGET"
+
 if wget --no-check-certificate -qO "$TEMP_FILE" "$URL"; then
     if [ -s "$TEMP_FILE" ] && grep -q "local=" "$TEMP_FILE"; then
         mv "$TEMP_FILE" "$TARGET"
-        /etc/init.d/dnsmasq reload
+        /etc/init.d/dnsmasq restart
         logger -t hagezi "Blocklist updated successfully."
         echo "[+] Blocklist updated successfully!"
         exit 0
@@ -23,5 +30,5 @@ else
 fi
 
 rm -f "$TEMP_FILE"
-[ -f "$TARGET" ] || touch "$TARGET"
+# Hedef boþsa bile dokunma, eski liste kalsýn
 exit 1

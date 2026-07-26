@@ -1,7 +1,7 @@
 # =============================================================
-#  Zapret DPI Bypass — IP İstisna Listesi
-#  Bu listedeki IP blokları NFQUEUE 200'e girmez, doğrudan kabul edilir.
-#  Yorum satırları (#) ve boş satırlar yok sayılır.
+# Zapret DPI Bypass — IP İstisna Listesi
+# Bu listedeki IP blokları NFQUEUE'ya girmez, doğrudan kabul edilir.
+# Yorum satırları (#) ve boş satırlar yok sayılır.
 # =============================================================
 
 # Türk Telekom / TT Mobil
@@ -15,3 +15,9 @@
 
 # CleverTap CDN (TT Mobil push bildirimleri)
 108.157.52.0/24
+
+# Aras Kargo
+31.206.55.115
+
+# Steam
+103.10.124.0/24

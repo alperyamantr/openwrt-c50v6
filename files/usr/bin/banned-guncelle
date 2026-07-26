@@ -9,12 +9,11 @@ logger -t banned "Banned list update started..."
 
 # Telemetry + statik blok (sabit)
 STATIC_PART='# ============================================================
-#  STATIK ENGELLEMELER (MANUEL)
+#  STATIK ENGELLEMELER (MANUEL) - C50 v6 Optimized
+#  AdGuard DNS + Hagezi Light ile çakýþmayanlar
 # ============================================================
 
-# ============================================================
-#  WINDOWS / MICROSOFT TELEMETRY
-# ============================================================
+# ===== WINDOWS / MICROSOFT TELEMETRY =====
 address=/vortex.data.microsoft.com/0.0.0.0
 address=/vortex-win.data.microsoft.com/0.0.0.0
 address=/v10.vortex-win.data.microsoft.com/0.0.0.0
@@ -36,9 +35,7 @@ address=/bingads.microsoft.com/0.0.0.0
 address=/adnxs.com/0.0.0.0
 address=/nav.smartscreen.microsoft.com/0.0.0.0
 
-# ============================================================
-#  AMD & NVIDIA TELEMETRY
-# ============================================================
+# ===== AMD & NVIDIA TELEMETRY =====
 address=/telemetry.amd.com/0.0.0.0
 address=/crash.amd.com/0.0.0.0
 address=/telemetry.nvidia.com/0.0.0.0
@@ -47,33 +44,62 @@ address=/events.gfe.nvidia.com/0.0.0.0
 address=/crashreport.nvidia.com/0.0.0.0
 
 # ============================================================
-#  GOOGLE VERI TOPLAMA
+# GOOGLE / YOUTUBE REKLAMLARI
 # ============================================================
+
+# Google Ads
+address=/adservice.google.com/0.0.0.0
+address=/adservice.google.com.tr/0.0.0.0
+address=/adservices.google.com/0.0.0.0
+address=/www.googleadservices.com/0.0.0.0
+address=/partner.googleadservices.com/0.0.0.0
+
+# Google Syndication
+address=/pagead2.googlesyndication.com/0.0.0.0
+address=/pagead2.googleadservices.com/0.0.0.0
+address=/tpc.googlesyndication.com/0.0.0.0
+address=/syndication.google.com/0.0.0.0
+
+# DoubleClick
+address=/doubleclick.net/0.0.0.0
+address=/ad.doubleclick.net/0.0.0.0
+address=/pagead.l.doubleclick.net/0.0.0.0
+address=/partnerad.l.doubleclick.net/0.0.0.0
+address=/googleads.g.doubleclick.net/0.0.0.0
+address=/pubads.g.doubleclick.net/0.0.0.0
+address=/securepubads.g.doubleclick.net/0.0.0.0
+address=/stats.g.doubleclick.net/0.0.0.0
+address=/survey.g.doubleclick.net/0.0.0.0
+
+# YouTube Ads
+address=/ads.youtube.com/0.0.0.0
+address=/ad.youtube.com/0.0.0.0
+
+# CDN Ad Hosts
+address=/s0.2mdn.net/0.0.0.0
+address=/s1.2mdn.net/0.0.0.0
+
+# ============================================================
+# TELEMETRY / ANALYTICS
+# ============================================================
+
 address=/google-analytics.com/0.0.0.0
 address=/ssl.google-analytics.com/0.0.0.0
 address=/analytics.google.com/0.0.0.0
-address=/uma.googleapis.com/0.0.0.0
 address=/app-measurement.com/0.0.0.0
+address=/uma.googleapis.com/0.0.0.0
+address=/firebaselogging.googleapis.com/0.0.0.0
 address=/crashlytics.com/0.0.0.0
-address=/adservice.google.com/0.0.0.0
-address=/adservice.google.com.tr/0.0.0.0
-address=/googleadservices.com/0.0.0.0
-address=/pagead2.googlesyndication.com/0.0.0.0
-address=/doubleclick.net/0.0.0.0
+address=/crashlyticsreports-pa.googleapis.com/0.0.0.0
+address=/video-stats.l.google.com/0.0.0.0
 address=/googleoptimize.com/0.0.0.0
 
-# ============================================================
-#  ADOBE TELEMETRI
-# ============================================================
+# ===== ADOBE TELEMETRI =====
 address=/activate.adobe.com/0.0.0.0
 address=/genuine.adobe.com/0.0.0.0
 address=/prod.adobegenuine.com/0.0.0.0
-address=/omtrdc.net/0.0.0.0
-address=/2o7.net/0.0.0.0
 
-# ============================================================
-#  SOSYAL MEDYA TRACKER
-# ============================================================
+# ===== SOSYAL MEDYA TRACKER =====
 address=/connect.facebook.net/0.0.0.0
 address=/pixel.facebook.com/0.0.0.0
 address=/analytics.twitter.com/0.0.0.0
@@ -82,9 +108,7 @@ address=/ads.tiktok.com/0.0.0.0
 address=/px.ads.linkedin.com/0.0.0.0
 address=/ct.pinterest.com/0.0.0.0
 
-# ============================================================
-#  SESSION RECORDING / ICERIK ONERILERI
-# ============================================================
+# ===== SESSION RECORDING / ICERIK ONERILERI =====
 address=/cdn.taboola.com/0.0.0.0
 address=/trc.taboola.com/0.0.0.0
 address=/odb.outbrain.com/0.0.0.0
@@ -94,34 +118,26 @@ address=/static.hotjar.com/0.0.0.0
 address=/insights.hotjar.com/0.0.0.0
 address=/edge.fullstory.com/0.0.0.0
 
-# ============================================================
-#  GENEL ANALYTICS
-# ============================================================
+# ===== GENEL ANALYTICS =====
 address=/api.segment.io/0.0.0.0
 address=/api.mixpanel.com/0.0.0.0
 address=/api.amplitude.com/0.0.0.0
 
-# ============================================================
-#  GAMING TELEMETRY
-# ============================================================
+# ===== GAMING TELEMETRY =====
 address=/datarouter.ol.epicgames.com/0.0.0.0
 address=/telemetry.epicgames.com/0.0.0.0
 address=/telemetry.ea.com/0.0.0.0
 address=/telemetry.ubisoft.com/0.0.0.0
 address=/telemetry.battle.net/0.0.0.0
 
-# ============================================================
-#  SAMSUNG / LG / XIAOMI / APPLE IOT TELEMETRI
-# ============================================================
+# ===== SAMSUNG / LG / XIAOMI / APPLE IOT TELEMETRI =====
 address=/samsungacr.com/0.0.0.0
 address=/lgtvsdp.com/0.0.0.0
 address=/log.ad.xiaomi.com/0.0.0.0
 address=/tracking.miui.com/0.0.0.0
 address=/metrics.apple.com/0.0.0.0
 
-# ============================================================
-#  TURKIYE -- PHISHING / DOLANDIRICILIK (MANUEL)
-# ============================================================
+# ===== TURKIYE -- PHISHING / DOLANDIRICILIK =====
 address=/e-devlet-kapisi-yardim.com/0.0.0.0
 address=/hgsdolumu.link/0.0.0.0
 address=/ptt-hgs-tahsilat.com/0.0.0.0
@@ -135,35 +151,29 @@ address=/akbank-online.net/0.0.0.0
 address=/trendyoladresimiguncelle.com/0.0.0.0
 address=/meritbet818.com/0.0.0.0
 
-# ============================================================
-#  MIRKANCAL TR REKLAM LISTESI
-# ============================================================
+# ===== MIRKANCAL TR REKLAM LISTESI =====
 address=/admatic.com.tr/0.0.0.0
 address=/reklamport.com/0.0.0.0
 address=/medyanet.com.tr/0.0.0.0
 address=/medyanetads.com/0.0.0.0
 address=/adhood.com/0.0.0.0
 address=/adphorus.com/0.0.0.0
-address=/taboola.com/0.0.0.0
 address=/mgid.com/0.0.0.0
-address=/outbrain.com/0.0.0.0
-address=/criteo.com/0.0.0.0
 address=/bilyoner.com/0.0.0.0
 address=/oley.com/0.0.0.0
 address=/mynet.com/0.0.0.0
-address=/donanimhaber.com/0.0.0.0
 address=/eksisozluk.com/0.0.0.0
 
 '
 
-# Mevcut dosyadan SITEEKLE kÄ±smÄ±nÄ± al
+# Mevcut dosyadan SITEEKLE kýsmýný al
 SITEEKLE_PART=""
 if grep -Fq "# ==SITEEKLE-BASLANGIC==" "$BANNED_FILE" 2>/dev/null && \
    grep -Fq "# ==SITEEKLE-BITIS==" "$BANNED_FILE" 2>/dev/null; then
     SITEEKLE_PART=$(sed -n '/# ==SITEEKLE-BASLANGIC==/,/# ==SITEEKLE-BITIS==/p' "$BANNED_FILE" 2>/dev/null)
 fi
 
-# USOM API'den veri Ã§ek
+# USOM API'den veri çek
 > "$TEMP_FILE"
 
 for page in $(seq 1 $USOM_PAGES); do
@@ -188,11 +198,11 @@ done
 # Benzersiz domainler
 UNIQUE_DOMAINS=$(sort -u "$TEMP_FILE" | grep -v '^$')
 
-# DosyayÄ± yaz
+# Dosyayý yaz
 {
     echo "$STATIC_PART"
     
-    # SITEEKLE kÄ±smÄ± varsa ekle
+    # SITEEKLE kýsmý varsa ekle
     if [ -n "$SITEEKLE_PART" ]; then
         echo ""
         echo "$SITEEKLE_PART"
@@ -225,7 +235,7 @@ UNIQUE_DOMAINS=$(sort -u "$TEMP_FILE" | grep -v '^$')
     echo "# ==USOM-BITIS=="
 } > "${BANNED_FILE}.tmp"
 
-# Adet sayÄ±sÄ±nÄ± gÃ¼ncelle
+# Adet sayýsýný güncelle
 sed -i "s/#  Adet   : HESAPLANACAK/#  Adet   : $FINAL_COUNT/" "${BANNED_FILE}.tmp"
 
 mv "${BANNED_FILE}.tmp" "$BANNED_FILE"
@@ -234,4 +244,4 @@ rm -f "$TEMP_FILE"
 /etc/init.d/dnsmasq reload
 
 logger -t banned "Update completed. $FINAL_COUNT USOM domains added."
-echo "[+] banned.conf gÃ¼ncellendi. $FINAL_COUNT USOM domaini eklendi."
+echo "[+] banned.conf güncellendi. $FINAL_COUNT USOM domaini eklendi."

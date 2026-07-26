@@ -14,11 +14,14 @@ dnsmasq-full
 ca-bundle
 kmod-nfnetlink-queue
 kmod-nft-queue
+kmod-sched
 zram-swap
 kmod-zram
 fstools
 block-mount
 blockd
+htop
+kmod-tcp-westwood
 
 # ÇIKAR (Bağımlılığı olmayan veya zaten başkası tarafından çekilen)
 -opkg
