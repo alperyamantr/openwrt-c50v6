@@ -20,6 +20,11 @@ echo "==> Step 2: Prepare build (config)"
 chmod +x "$SCRIPTS_DIR"/*.sh
 "$SCRIPTS_DIR"/prepare.sh
 
+echo "==> Step 2b: Fix base packages"
+echo "CONFIG_PACKAGE_fstools=y" >> .config
+echo "CONFIG_PACKAGE_block-mount=y" >> .config
+make defconfig
+
 echo "==> Step 3: Copy custom files"
 mkdir -p files
 cp -a "$FILES_DIR"/. files/
@@ -27,10 +32,14 @@ cp -a "$FILES_DIR"/. files/
 echo "==> Step 4: Optimize"
 "$SCRIPTS_DIR"/optimize.sh
 
-echo "==> Step 5: Verify config (optional)"
+echo "==> Step 5: Verify config"
 if [ -f "./scripts/diffconfig.sh" ]; then
     ./scripts/diffconfig.sh > diffconfig.txt
     echo "==> Config saved to diffconfig.txt"
+    
+    # Kontrol et
+    grep "CONFIG_PACKAGE_fstools=y" diffconfig.txt || (echo "WARNING: fstools missing!" && exit 1)
+    grep "CONFIG_PACKAGE_block-mount=y" diffconfig.txt || (echo "WARNING: block-mount missing!" && exit 1)
 fi
 
 echo "==> Step 6: Download sources"
