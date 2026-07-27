@@ -32,10 +32,10 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Update USOM banned list
-        run: |
-          chmod +x scripts/banned_conf-guncelle.sh
-          ./scripts/banned_conf-guncelle.sh
+     - name: Update banned.conf
+       run: |
+       chmod +x files/usr/bin/banned-guncelle
+       ./files/usr/bin/banned-guncelle
 
       - name: Prepare build
         working-directory: openwrt
