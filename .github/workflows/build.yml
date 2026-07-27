@@ -32,10 +32,10 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-     - name: Update banned.conf
-       run: |
-       chmod +x files/usr/bin/banned-guncelle
-       ./files/usr/bin/banned-guncelle
+     - name: Copy custom files
+        run: |
+          mkdir -p openwrt/files
+          cp -a files/. openwrt/files/
 
       - name: Prepare build
         working-directory: openwrt
@@ -47,10 +47,6 @@ jobs:
           echo "==> Disabled"
           grep "CONFIG_PACKAGE_ppp\|CONFIG_PACKAGE_odhcp" .config || true
 
-      - name: Copy custom files
-        run: |
-          mkdir -p openwrt/files
-          cp -a files/. openwrt/files/
 
       - name: Optimize build
         working-directory: openwrt
