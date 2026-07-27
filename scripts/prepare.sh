@@ -4,7 +4,6 @@ echo "==> Copy profile"
 cp ../profiles/c50v6-minimal.config .config
 echo "==> Apply package list"
 while IFS= read -r pkg || [ -n "$pkg" ]; do
-    # Windows CRLF temizligi - \r karakterini kaldir
     pkg="${pkg%$'\r'}"
     case "$pkg" in
         ""|\#*) continue ;;
@@ -22,5 +21,10 @@ while IFS= read -r pkg || [ -n "$pkg" ]; do
             ;;
     esac
 done < ../profiles/packages.txt
+
+echo "==> Ensure base filesystem tools"
+echo "CONFIG_PACKAGE_fstools=y" >> .config
+echo "CONFIG_PACKAGE_block-mount=y" >> .config
+
 echo "==> Generate final config"
 make defconfig
