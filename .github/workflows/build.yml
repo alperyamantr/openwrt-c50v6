@@ -44,6 +44,8 @@ jobs:
           echo "CONFIG_PACKAGE_fstools=y" >> .config
           echo "CONFIG_PACKAGE_block-mount=y" >> .config
           make defconfig
+          sed -i 's/CONFIG_PACKAGE_procd-seccomp=y/# CONFIG_PACKAGE_procd-seccomp is not set/' .config
+          make defconfig
 
       - name: Copy custom files
         run: |
