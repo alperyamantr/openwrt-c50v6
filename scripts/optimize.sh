@@ -1,6 +1,15 @@
-echo "==> Kernel config optimizations"
+#!/bin/bash
+set -e
 
-grep -q "^CONFIG_KERNEL_SWAP=y$" .config || cat >> .config << 'EOF'
+echo "==> Optimizing build..."
+
+find . -type f \( -name "*.orig" -o -name "*.rej" \) -delete
+chmod +x ../scripts/*.sh
+find ./files/etc/init.d ./files/etc/uci-defaults ./files/usr/bin -type f -exec chmod +x {} + 2>/dev/null || true
+chmod +x ./files/opt/zapret/nfqws 2>/dev/null || true
+
+echo "==> Kernel config optimizations"
+cat >> .config << 'EOF'
 
 # ZRAM için SWAP desteği (ZORUNLU)
 CONFIG_KERNEL_SWAP=y
@@ -27,4 +36,4 @@ CONFIG_ZRAM=y
 CONFIG_ZRAM_DEF_COMP_LZ4=y
 EOF
 
-fi
+echo "==> Optimization complete."

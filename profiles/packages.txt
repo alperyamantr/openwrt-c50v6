@@ -1,4 +1,4 @@
-# KORU (Zapret + LuCI + Firewall + Mount için hayati)
+# KORU
 luci-base
 luci-mod-admin-full
 luci-mod-network
@@ -23,20 +23,15 @@ blockd
 htop
 kmod-tcp-westwood
 
-# ÇIKAR (Bağımlılığı olmayan veya zaten başkası tarafından çekilen)
+# ÇIKAR (Patch'ler sayesinde artık güvenli)
 -opkg
 -libopkg
 -procd-ujail
 -procd-seccomp
--kmod-nf-flow
--kmod-usb-core
+-odhcp6c
 -kmod-usb2
 -kmod-usb-ohci
 -kmod-usb-ledtrig-usbport
--kmod-nls-base
--kmod-nls-cp437
--kmod-nls-iso8859-1
--kmod-nls-utf8
 -kmod-fs-ext4
 -kmod-fs-vfat
 -kmod-fs-exfat
@@ -48,16 +43,8 @@ kmod-tcp-westwood
 -kmod-sit
 -kmod-vti
 -kmod-l2tp
--kmod-tun
 -kmod-wireguard
 -kmod-nf-nathelper-extra
--iptables-nft
--iptables-mod-nat-extra
--iptables-mod-extra
--kmod-ipt-core
--kmod-ipt-conntrack
--kmod-ipt-nat
--kmod-ipt-extra
 -kmod-ledtrig-default-on
 -kmod-ledtrig-heartbeat
 -kmod-ledtrig-timer
@@ -65,17 +52,14 @@ kmod-tcp-westwood
 -kmod-hwmon-core
 -kmod-crypto-hw-eip93
 
-# ZATEN ÇIKARILMIŞ (Doğru)
+# ZATEN ÇIKARILMIŞ
 -luci-app-package-manager
 -luci-proto-ipv6
 -luci-proto-ppp
--odhcp6c
 -odhcpd-ipv6only
 -ip6tables
 -kmod-ip6tables
--kmod-ipv6
 -kmod-nf-ipt6
--kmod-nf-conntrack6
 -kmod-nf-reject6
 -kmod-nf-log6
 -rpcd-mod-rrdns
