@@ -1,4 +1,5 @@
 config zram 'zram'
     option enabled '1'
     option size_mb '32'
+    option priority '100'
     option comp_algorithm 'lzo'

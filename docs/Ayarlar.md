@@ -117,41 +117,53 @@ cat /proc/net/netfilter/nfnetlink_queue
 
 ```conf
 # TCP Congestion & Performance
-net.ipv4.tcp_congestion_control=westwood   # kmod-tcp-westwood eklendi; kernel'de yoksa cubic'e düşer
+net.ipv4.tcp_congestion_control=westwood
 net.ipv4.tcp_fastopen=3
 net.ipv4.tcp_ecn=1                          # bufferbloat/gecikme azaltma için ACIK
 net.ipv4.tcp_slow_start_after_idle=0
 net.ipv4.tcp_no_metrics_save=1
 net.ipv4.tcp_fin_timeout=15
 net.ipv4.tcp_tw_reuse=1
+net.ipv4.tcp_max_tw_buckets=2048
+net.ipv4.ip_local_port_range=1024 65535
 
 # Buffer Tuning (C50 RAM sinirina uygun)
-net.core.netdev_max_backlog=1024
+net.core.default_qdisc=fq_codel
 net.core.netdev_budget=300
 net.core.netdev_budget_usecs=3000
 net.core.rmem_max=262144
 net.core.wmem_max=262144
 net.core.rmem_default=163840
 net.core.wmem_default=163840
+net.ipv4.tcp_rmem=4096 87380 262144
+net.ipv4.tcp_wmem=4096 65536 262144
 
 # Keepalive (Ghost connection temizligi)
 net.ipv4.tcp_keepalive_time=300
 net.ipv4.tcp_keepalive_intvl=15
 net.ipv4.tcp_keepalive_probes=3
 
+# Conntrack (Zapret harici)
+net.netfilter.nf_conntrack_udp_timeout=30
+
 # RAM Yonetimi
 vm.swappiness=10
 ```
 
-> **Not:** `nf_conntrack_max` burada YOK — zapret init scripti kendi içinde set ediyor (`4096`). Çakışma olmaması için tek kaynak zapret script'i.
+> **Not:** `nf_conntrack_max` (`4096`), `nfnetlink_queue_maxlen` (`1024`) ve `netdev_max_backlog` (`1024`) — bu üç değer `/etc/init.d/zapret` içinde set edilir. Çakışma olmaması için tek kaynak zapret script'i.
 
 ### fq_codel / kmod-sched
 
-`net.core.default_qdisc=fq_codel` sysctl'de ayarlıydı ama `kmod-sched` paketi eksik olduğu için gerçekte `pfifo_fast` çalışıyordu (bufferbloat koruması aktif değildi). **`kmod-sched` artık `packages.txt`'e eklendi** — yeni build'de gerçek `fq_codel` aktif olacak.
+`net.core.default_qdisc=fq_codel` artık `sysctl.conf`'ta aktif. `kmod-sched` paketi `packages.txt`'e eklendi — yeni build'de gerçek `fq_codel` çalışıyor. Doğrulama:
+
+```sh
+sysctl net.core.default_qdisc
+lsmod | grep fq_codel
+```
 
 ### TCP Westwood
 
-`kmod-tcp-westwood` `packages.txt`'e eklendi (önceki build'de mevcut değildi). Yeni build sonrası doğrulama:
+`kmod-tcp-westwood` paketi **çıkarıldı** — bunun yerine `patch-kernel.sh` ile kernel'e built-in olarak eklendi. Yeni build sonrası doğrulama:
 
 ```sh
 sysctl net.ipv4.tcp_available_congestion_control
@@ -181,8 +193,6 @@ config zram 'zram'
 /etc/init.d/zram-swap enable
 exit 0
 ```
-
-> İlk build'de paket kuruluydu ama servis/config eksikti (`/etc/init.d/zram-swap` yoktu, `zramctl` çalışmıyordu). Bu iki dosya eksikliği gideriyor.
 
 Doğrulama (yeni build sonrası):
 ```sh
@@ -222,7 +232,7 @@ internet beklenir (max 60sn)
 hagezi-guncelle çalışır
 ```
 
-> `hagezi_init` dnsmasq'tan önce çalışmalı (START=5), symlink oluşturma mantığı `rc.local`'a taşınmamalı — aksi halde dnsmasq boot'ta "bad option" hatasıyla çöker.
+> `hagezi_init` dnsmasq'tan önce çalışmalı (START=5). İçinde `touch /tmp/hagezi_multi.conf` olmalı — yoksa bozuk symlink dnsmasq'u çökertir.
 
 ---
 
@@ -349,6 +359,7 @@ files/
 │   └── zapret/
 │       ├── nfqws
 │       ├── files/
+│       ├── ipset/
 │       └── update-fake.sh
 │
 └── usr/
@@ -429,7 +440,7 @@ df -h /overlay
 
 Repo: `alperyamantr/openwrt-c50v6`
 
-Build akışı: checkout → dependencies kur → OpenWrt clone → feeds update/install → `prepare.sh` (paket listesi uygula + `\r` temizle + explicit disable) → `files/` kopyala → `optimize.sh` (chmod +x) → `make download` → `make` → checksum → artifact upload.
+Build akışı: checkout → dependencies kur → OpenWrt clone → feeds update/install → `patch-kernel.sh` (kernel config) → `prepare.sh` (paket listesi uygula + `` temizle + explicit disable) → `files/` kopyala → `optimize.sh` (chmod +x) → `make download` → `make` → checksum → artifact upload.
 
 > `prepare.sh` kritik kural: device-default paketleri (ppp, odhcp6c vb.) sadece `=y` satırını silmek yetmez, **`# CONFIG_PACKAGE_x is not set`** olarak açıkça belirtmek gerekir — full buildroot cihaz profilinden bu paketleri otomatik çekiyor.
 
@@ -445,7 +456,7 @@ Build akışı: checkout → dependencies kur → OpenWrt clone → feeds update
 | USB                       | Yok                                    |
 | cpufreq                  | Yok                                    |
 | BBR                      | Kernel'de yok, router için de önerilmez (endpoint'lerde faydalı) |
-| SQM / CAKE                | kmod-sched-cake/kmod-ifb bu hedef için mevcut değil |
+| SQM / CAKE               | kmod-sched-cake/kmod-ifb bu hedef için mevcut değil |
 | nfnetlink_queue_maxlen    | Kernel'de mevcut değil                |
 | YouTube app içi reklam    | Server-side insertion nedeniyle DNS ile engellenemiyor |
 
@@ -455,7 +466,7 @@ Build akışı: checkout → dependencies kur → OpenWrt clone → feeds update
 
 | Sorun                                   | Çözüm                                          |
 | ------------------------------------------ | ------------------------------------------------ |
-| dnsmasq boot'ta crash                     | hagezi_init START=5 kontrol et; banned.conf'ta BOM olmadığından emin ol |
+| dnsmasq boot'ta crash                     | hagezi_init START=5 kontrol et; içinde `touch /tmp/hagezi_multi.conf` olduğundan emin ol |
 | hagezi_multi.conf bulunamıyor            | Symlink'i kontrol et, /tmp reboot'ta sıfırlanır |
 | Hagezi boş / format hatası               | /usr/bin/hagezi-guncelle çalıştır, dnsmasq formatında olduğunu doğrula |
 | nfqws çalışmıyor                          | pgrep -a nfqws; procd restart bazen "Command failed: Not found" verip başlamayabilir, stop + start dene |

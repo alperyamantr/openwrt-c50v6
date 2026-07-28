@@ -21,7 +21,6 @@ fstools
 block-mount
 blockd
 htop
-kmod-tcp-westwood
 iptables-mod-nfqueue
 libnetfilter-queue
 kmod-sched-fq-codel
@@ -55,6 +54,7 @@ kmod-sched-cake
 -kmod-thermal
 -kmod-hwmon-core
 -kmod-crypto-hw-eip93
+-kmod-tcp-westwood
 
 # ZATEN ÇIKARILMIŞ
 -luci-app-package-manager

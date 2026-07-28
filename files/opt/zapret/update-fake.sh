@@ -1,16 +1,26 @@
 #!/bin/sh
 FAKE_DIR="/opt/zapret/files/fake"
-LOG_FILE="/tmp/zapret-update.log"  # RAM disk, flash'e yazmaz
+LOG_FILE="/tmp/zapret-update.log"
 
 mkdir -p "$FAKE_DIR"
 cd "$FAKE_DIR" || exit 1
 
 echo "$(date) - Fake update started" >> "$LOG_FILE"
 
-wget -q --no-check-certificate https://raw.githubusercontent.com/bol-van/zapret/master/files/fake/tls_clienthello_www_google_com.bin -O tls_clienthello_www_google_com.bin
-wget -q --no-check-certificate https://raw.githubusercontent.com/bol-van/zapret/master/files/fake/quic_initial_www_google_com.bin -O quic_initial_www_google_com.bin
-wget -q --no-check-certificate https://raw.githubusercontent.com/bol-van/zapret/master/files/fake/discord-ip-discovery-with-port.bin -O discord-ip-discovery-with-port.bin
-wget -q --no-check-certificate https://raw.githubusercontent.com/bol-van/zapret/master/files/fake/stun.bin -O stun.bin
+# Atomik indirme: önce .tmp'ye, başarılıysa mv ile taşı
+# Yarım kalırsa eski dosya bozulmaz
+
+wget -q https://raw.githubusercontent.com/bol-van/zapret/master/files/fake/tls_clienthello_www_google_com.bin -O tls_clienthello_www_google_com.bin.tmp && \
+    mv tls_clienthello_www_google_com.bin.tmp tls_clienthello_www_google_com.bin
+
+wget -q https://raw.githubusercontent.com/bol-van/zapret/master/files/fake/quic_initial_www_google_com.bin -O quic_initial_www_google_com.bin.tmp && \
+    mv quic_initial_www_google_com.bin.tmp quic_initial_www_google_com.bin
+
+wget -q https://raw.githubusercontent.com/bol-van/zapret/master/files/fake/discord-ip-discovery-with-port.bin -O discord-ip-discovery-with-port.bin.tmp && \
+    mv discord-ip-discovery-with-port.bin.tmp discord-ip-discovery-with-port.bin
+
+wget -q https://raw.githubusercontent.com/bol-van/zapret/master/files/fake/stun.bin -O stun.bin.tmp && \
+    mv stun.bin.tmp stun.bin
 
 echo "$(date) - Fake update finished" >> "$LOG_FILE"
 ls -l "$FAKE_DIR" >> "$LOG_FILE"
