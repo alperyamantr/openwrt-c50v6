@@ -20,5 +20,20 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     fi
 done < ../profiles/packages.txt
 
+# Kernel swap desteğini aç (ZRAM için ZORUNLU)
+echo "==> Enabling kernel SWAP..."
+for cfg in target/linux/ramips/mt76x8/config-*; do
+    if [ -f "$cfg" ]; then
+        echo "Found: $cfg"
+        if grep -q "CONFIG_SWAP" "$cfg"; then
+            sed -i 's/# CONFIG_SWAP is not set/CONFIG_SWAP=y/' "$cfg"
+            sed -i 's/CONFIG_SWAP=n/CONFIG_SWAP=y/' "$cfg"
+        else
+            echo "CONFIG_SWAP=y" >> "$cfg"
+        fi
+        grep "^CONFIG_SWAP=y" "$cfg" && echo "OK: SWAP enabled in $cfg" || echo "FAIL!"
+    fi
+done
+
 make defconfig
 echo "==> Preparation complete."
