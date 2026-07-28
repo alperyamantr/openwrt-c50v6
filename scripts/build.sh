@@ -31,8 +31,9 @@ echo "==> Step 5: Normalize config"
 make defconfig
 
 echo "==> Step 6: Verify config"
-grep -q "CONFIG_PACKAGE_fstools=y" .config || (echo "ERROR: fstools missing!" && exit 1)
-grep -q "CONFIG_PACKAGE_block-mount=y" .config || (echo "ERROR: block-mount missing!" && exit 1)
+grep -q "^CONFIG_KERNEL_SWAP=y$" .config || (echo "ERROR: CONFIG_KERNEL_SWAP missing!" && exit 1)
+grep -q "^CONFIG_PACKAGE_kmod-zram=y$" .config || (echo "ERROR: kmod-zram missing!" && exit 1)
+grep -q "^CONFIG_PACKAGE_zram-swap=y$" .config || (echo "ERROR: zram-swap missing!" && exit 1)
 
 echo "==> Step 7: Download sources"
 make download -j"$(nproc)"
