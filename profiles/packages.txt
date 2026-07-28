@@ -22,6 +22,10 @@ block-mount
 blockd
 htop
 kmod-tcp-westwood
+iptables-mod-nfqueue
+libnetfilter-queue
+kmod-sched-fq-codel
+kmod-sched-cake
 
 # ÇIKAR (Patch'ler sayesinde artık güvenli)
 -opkg

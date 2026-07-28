@@ -1,30 +1,26 @@
 #!/bin/bash
 set -e
-
-OPENWRT_DIR="openwrt"
-TARGET_CONFIG="target/linux/ramips/mt76x8/config-6.12"
-
-echo "==> Patching kernel config: $TARGET_CONFIG"
-
-# SWAP
-if ! grep -q "^CONFIG_SWAP=y" "$OPENWRT_DIR/$TARGET_CONFIG"; then
-    echo "CONFIG_SWAP=y" >> "$OPENWRT_DIR/$TARGET_CONFIG"
-    echo "OK: CONFIG_SWAP=y added"
-fi
-
-# TCP Westwood
-if ! grep -q "^CONFIG_TCP_CONG_ADVANCED=y" "$OPENWRT_DIR/$TARGET_CONFIG"; then
-    echo "CONFIG_TCP_CONG_ADVANCED=y" >> "$OPENWRT_DIR/$TARGET_CONFIG"
-fi
-
-if ! grep -q "^CONFIG_TCP_CONG_WESTWOOD=y" "$OPENWRT_DIR/$TARGET_CONFIG"; then
-    echo "CONFIG_TCP_CONG_WESTWOOD=y" >> "$OPENWRT_DIR/$TARGET_CONFIG"
-fi
-
-if ! grep -q "^CONFIG_DEFAULT_WESTWOOD=y" "$OPENWRT_DIR/$TARGET_CONFIG"; then
-    echo "CONFIG_DEFAULT_WESTWOOD=y" >> "$OPENWRT_DIR/$TARGET_CONFIG"
-    echo 'CONFIG_DEFAULT_TCP_CONG="westwood"' >> "$OPENWRT_DIR/$TARGET_CONFIG"
-    echo "OK: Westwood added"
-fi
-
-echo "==> Done"
+echo "==> Copy profile"
+cp ../profiles/c50v6-minimal.config .config
+echo "==> Apply package list"
+while IFS= read -r pkg || [ -n "$pkg" ]; do
+    # Windows CRLF temizligi - \r karakterini kaldir
+    pkg="${pkg%$'\r'}"
+    case "$pkg" in
+        ""|\#*) continue ;;
+        -*)
+            name="${pkg#-}"
+            sed -i "/^CONFIG_PACKAGE_${name}=y$/d" .config
+            sed -i "/^CONFIG_PACKAGE_${name}=m$/d" .config
+            grep -qxF "# CONFIG_PACKAGE_${name} is not set" .config || \
+                echo "# CONFIG_PACKAGE_${name} is not set" >> .config
+            ;;
+        *)
+            sed -i "/^# CONFIG_PACKAGE_${pkg} is not set$/d" .config
+            grep -qxF "CONFIG_PACKAGE_${pkg}=y" .config || \
+                echo "CONFIG_PACKAGE_${pkg}=y" >> .config
+            ;;
+    esac
+done < ../profiles/packages.txt
+echo "==> Generate final config"
+make defconfig
