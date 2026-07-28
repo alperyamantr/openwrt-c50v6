@@ -36,8 +36,8 @@ jobs:
 
       - name: Run prepare.sh (Kernel patches)
         run: |
-          chmod +x prepare.sh
-          ./prepare.sh
+          chmod +x scripts/prepare.sh
+          ./scripts/prepare.sh
 
       - name: Copy custom config
         run: |
