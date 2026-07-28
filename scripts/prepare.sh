@@ -10,8 +10,7 @@ while IFS= read -r pkg || [ -n "$pkg" ]; do
         ""|\#*) continue ;;
         -*)
             name="${pkg#-}"
-            sed -i "/^CONFIG_PACKAGE_${name}=y$/d" .config
-            sed -i "/^CONFIG_PACKAGE_${name}=m$/d" .config
+            sed -i "/^CONFIG_PACKAGE_${name}=/d" .config
             grep -qxF "# CONFIG_PACKAGE_${name} is not set" .config || \
                 echo "# CONFIG_PACKAGE_${name} is not set" >> .config
             ;;
