@@ -36,9 +36,10 @@ jobs:
           ./scripts/feeds install -a
 
       - name: Prepare build
+        working-directory: openwrt
         run: |
-          chmod +x scripts/*.sh
-          cd openwrt && ../scripts/prepare.sh
+          chmod +x ../scripts/*.sh
+          ../scripts/prepare.sh
 
       - name: Copy custom files
         working-directory: openwrt
@@ -54,7 +55,7 @@ jobs:
         working-directory: openwrt
         run: make defconfig
 
-        - name: Verify config
+      - name: Verify config
         working-directory: openwrt
         run: |
           grep -q "CONFIG_PACKAGE_fstools=y" .config || (echo "ERROR: fstools missing!" && exit 1)
