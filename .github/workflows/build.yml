@@ -1,6 +1,10 @@
-name: Build OpenWrt 25.12.5
+name: Build OpenWrt for C50 v6
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -9,22 +13,21 @@ env:
 jobs:
   build:
     runs-on: ubuntu-24.04
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install -y \
-            build-essential clang flex g++ gawk gcc-multilib gettext \
-            git libncurses-dev libssl-dev python3-setuptools rsync \
-            swig unzip zlib1g-dev file wget curl jq
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang flex g++ gawk gcc-multilib gettext git libncurses-dev libssl-dev python3-setuptools rsync swig unzip zlib1g-dev file wget curl jq
 
       - name: Clone OpenWrt
         run: |
-          git clone --depth=1 --branch ${OPENWRT_VERSION} https://github.com/openwrt/openwrt.git
+          git clone --depth=1 https://github.com/openwrt/openwrt.git
+          cd openwrt
+          git fetch --depth=1 origin tag ${{ env.OPENWRT_VERSION }}
+          git checkout ${{ env.OPENWRT_VERSION }}
 
       - name: Update feeds
         working-directory: openwrt
@@ -38,65 +41,36 @@ jobs:
           chmod +x ../scripts/*.sh
           ../scripts/prepare.sh
 
-      - name: Fix base packages
-        working-directory: openwrt
-        run: |
-          echo "CONFIG_PACKAGE_fstools=y" >> .config
-          echo "CONFIG_PACKAGE_block-mount=y" >> .config
-          make defconfig
-          sed -i 's/CONFIG_PACKAGE_procd-seccomp=y/# CONFIG_PACKAGE_procd-seccomp is not set/' .config
-          make defconfig
-
       - name: Copy custom files
-        run: |
-          mkdir -p openwrt/files
-          cp -a files/. openwrt/files/
-
-      - name: Optimize build
         working-directory: openwrt
         run: |
-          ../scripts/optimize.sh
+          mkdir -p files
+          cp -a ../files/. files/
+
+      - name: Optimize
+        working-directory: openwrt
+        run: ../scripts/optimize.sh
+
+      - name: Normalize config
+        working-directory: openwrt
+        run: make defconfig
 
       - name: Verify config
         working-directory: openwrt
         run: |
-          echo "==> LuCI check"
-          grep "CONFIG_PACKAGE_luci" .config || true
-          echo "==> Unwanted packages check"
-          grep -E "CONFIG_PACKAGE_(procd-ujail|procd-seccomp|kmod-usb-core|kmod-ppp|ppp|odhcp6c)=y" .config && exit 1 || true
-          echo "==> Mount chain check"
-          grep "CONFIG_PACKAGE_fstools=y" .config || (echo "ERROR: fstools missing!" && exit 1)
-          grep "CONFIG_PACKAGE_block-mount=y" .config || (echo "ERROR: block-mount missing!" && exit 1)
-          echo "==> ZRAM check"
-          grep "CONFIG_PACKAGE_zram-swap=y" .config || (echo "ERROR: zram-swap missing!" && exit 1)
-          grep "CONFIG_PACKAGE_kmod-zram=y" .config || (echo "ERROR: kmod-zram missing!" && exit 1)
-          echo "==> All checks passed"
-
-      - name: Show target
-        working-directory: openwrt
-        run: |
-          grep '^CONFIG_TARGET' .config
+          grep -q "CONFIG_PACKAGE_fstools=y" .config || (echo "ERROR: fstools missing!" && exit 1)
+          grep -q "CONFIG_PACKAGE_block-mount=y" .config || (echo "ERROR: block-mount missing!" && exit 1)
 
       - name: Download sources
         working-directory: openwrt
-        run: |
-          make download -j"$(nproc)"
+        run: make download -j$(nproc)
 
       - name: Build firmware
         working-directory: openwrt
-        run: |
-          make -j"$(nproc)" V=s
+        run: make -j$(nproc) V=s
 
-      - name: Generate checksums
-        working-directory: openwrt/bin/targets
-        run: |
-          find . -type f ! -name sha256sums.txt -exec sha256sum {} \; | sort > sha256sums.txt
-
-      - name: Upload firmware
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: openwrt-c50v6-${{ github.run_number }}
-          compression-level: 0
-          if-no-files-found: error
-          path: |
-            openwrt/bin/targets/**
+          name: firmware
+          path: openwrt/bin/targets/

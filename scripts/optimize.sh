@@ -33,10 +33,4 @@ CONFIG_ZRAM=y
 CONFIG_ZRAM_DEF_COMP_LZ4=y
 EOF
 
-make defconfig
-
-# İstenmeyen paketleri kapat (make defconfig sonrası)
-sed -i 's/CONFIG_PACKAGE_procd-seccomp=y/# CONFIG_PACKAGE_procd-seccomp is not set/' .config
-sed -i 's/CONFIG_PACKAGE_procd-ujail=y/# CONFIG_PACKAGE_procd-ujail is not set/' .config
-
 echo "==> Optimization complete."
