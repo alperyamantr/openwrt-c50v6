@@ -39,11 +39,15 @@ jobs:
           chmod +x scripts/prepare.sh
           ./scripts/prepare.sh
 
-      - name: Copy custom config
+      - name: Apply custom config
         run: |
           cd openwrt
-          cp ../.config .config 2>/dev/null || true
+          cp ../.config .config
+          echo "=== .config contents ==="
+          cat .config | grep -E "(TARGET|CONFIG_PACKAGE)" | head -30
           make defconfig
+          echo "=== Target device check ==="
+          grep "^CONFIG_TARGET.*DEVICE" .config || echo "NO TARGET DEVICE SET"
 
       - name: Download package sources
         run: |
@@ -53,12 +57,23 @@ jobs:
       - name: Build firmware
         run: |
           cd openwrt
-          make -j$(nproc) V=s
+          make -j$(nproc)
+
+      - name: List all output files
+        run: |
+          echo "=== targets dir ==="
+          find openwrt/bin/targets -type f 2>/dev/null || echo "NO TARGETS DIR"
+          echo "=== all bin files ==="
+          find openwrt/bin -name "*.bin" -o -name "*.img" 2>/dev/null || echo "NO IMAGES"
+          echo "=== dir tree ==="
+          ls -laR openwrt/bin/ 2>/dev/null || echo "NO BIN DIR"
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: firmware
           path: |
-            openwrt/bin/targets/ramips/mt76x8/*-sysupgrade.bin
-            openwrt/bin/targets/ramips/mt76x8/*-factory.bin
+            openwrt/bin/targets/**/*.bin
+            openwrt/bin/targets/**/*.img
+            openwrt/bin/targets/**/*.elf
