@@ -25,6 +25,7 @@ iptables-mod-nfqueue
 libnetfilter-queue
 kmod-sched-fq-codel
 kmod-sched-cake
+tc-tiny
 
 # ÇIKAR (Patch'ler sayesinde artık güvenli)
 -opkg
@@ -55,6 +56,7 @@ kmod-sched-cake
 -kmod-hwmon-core
 -kmod-crypto-hw-eip93
 -kmod-tcp-westwood
+-tc-full
 
 # ZATEN ÇIKARILMIŞ
 -luci-app-package-manager

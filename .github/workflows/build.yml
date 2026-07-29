@@ -12,25 +12,37 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Cache OpenWrt feeds & dl
+        uses: actions/cache@v4
+        with:
+          path: |
+            openwrt/dl
+            openwrt/feeds
+          key: openwrt-${{ env.OPENWRT_VERSION }}-${{ hashFiles('profiles/packages.txt') }}
+          restore-keys: |
+            openwrt-${{ env.OPENWRT_VERSION }}-
+
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y \
-            build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext \
-            git libncurses-dev libssl-dev python3-setuptools rsync \
-            swig unzip zlib1g-dev file wget curl
+          sudo apt install -y             build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext             git libncurses-dev libssl-dev python3-setuptools rsync             swig unzip zlib1g-dev file wget curl ccache
+
       - name: Clone OpenWrt
         run: |
           git clone --depth=1 --branch ${OPENWRT_VERSION} https://github.com/openwrt/openwrt.git
+
       - name: Update feeds
         working-directory: openwrt
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+
       - name: Patch kernel config
         run: |
           chmod +x scripts/patch-kernel.sh
           scripts/patch-kernel.sh
+
       - name: Prepare build
         working-directory: openwrt
         run: |
@@ -40,15 +52,18 @@ jobs:
           grep "CONFIG_PACKAGE_luci" .config || true
           echo "==> Disabled packages"
           grep "CONFIG_PACKAGE_ppp\|CONFIG_PACKAGE_odhcp" .config || true
+
       - name: Copy custom files
         run: |
           mkdir -p openwrt/files
           cp -a files/. openwrt/files/
+
       - name: Optimize build
         working-directory: openwrt
         run: |
           ../scripts/optimize.sh
-          make defconfig    # ← EKLE: optimize.sh config'i değiştirdiyse sync et
+          make defconfig
+
       - name: Verify critical packages
         working-directory: openwrt
         run: |
@@ -57,18 +72,36 @@ jobs:
           grep -q "^CONFIG_PACKAGE_kmod-zram=y$" .config || (echo "ERROR: kmod-zram missing!" && exit 1)
           grep -q "^CONFIG_PACKAGE_zram-swap=y$" .config || (echo "ERROR: zram-swap missing!" && exit 1)
           echo "OK: all critical packages present"
+
       - name: Show target
         working-directory: openwrt
         run: |
           grep '^CONFIG_TARGET' .config
+
       - name: Download sources
         working-directory: openwrt
         run: |
           make download -j"$(nproc)"
+
       - name: Build firmware
         working-directory: openwrt
         run: |
           make -j"$(nproc)" V=s
+
+      - name: Check image size
+        working-directory: openwrt/bin/targets/ramips/mt76x8
+        run: |
+          echo "=== Image sizes ==="
+          ls -lh *.bin
+          for f in *.bin; do
+            size=$(stat -c%s "$f")
+            kb=$(($size/1024))
+            echo "$f: ${kb}KB"
+            if [ $size -gt 7600000 ]; then
+              echo "WARNING: $f is over 7.6MB — close to 8MB flash limit!"
+            fi
+          done
+
       - name: Debug kernel config (on failure)
         if: failure()
         run: |
@@ -83,11 +116,13 @@ jobs:
           tail -30 openwrt/.config
           echo ""
           echo "=== Kernel config-6.12 Westwood entries ==="
-          grep -n "WESTWOOD\|SWAP\|CONG_ADVANCED\|DEFAULT_TCP_CONG" openwrt/target/linux/ramips/mt76x8/config-6.12 || tru
+          grep -n "WESTWOOD\|SWAP\|CONG_ADVANCED\|DEFAULT_TCP_CONG" openwrt/target/linux/ramips/mt76x8/config-6.12 || true
+
       - name: Generate checksums
         working-directory: openwrt/bin/targets
         run: |
           find . -type f ! -name sha256sums.txt -exec sha256sum {} \; | sort > sha256sums.txt
+
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
@@ -96,5 +131,3 @@ jobs:
           if-no-files-found: error
           path: |
             openwrt/bin/targets/**
-            # openwrt/bin/packages/**
-  

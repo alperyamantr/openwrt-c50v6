@@ -30,6 +30,9 @@ CONFIG_TARGET_SQUASHFS_BLOCK_SIZE=512
 CONFIG_USE_MKLIBS=y
 CONFIG_STRIP_KERNEL_EXPORTS=y
 
+# Incremental build hızlandırma
+CONFIG_CCACHE=y
+
 # ZRAM kernel config'leri - OpenWrt .config'inde CONFIG_KERNEL_ prefix'i gerekir
 # Ama kmod-zram zaten packages.txt'te, gerek yok
 # CONFIG_KERNEL_ZSMALLOC=y
