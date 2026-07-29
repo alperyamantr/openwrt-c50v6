@@ -26,7 +26,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y             build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext             git libncurses-dev libssl-dev python3-setuptools rsync             swig unzip zlib1g-dev file wget curl ccache
+          sudo apt install -y \
+            build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext \
+            git libncurses-dev libssl-dev python3-setuptools rsync \
+            swig unzip zlib1g-dev file wget curl ccache
 
       - name: Clone OpenWrt
         run: |
@@ -52,6 +55,8 @@ jobs:
           grep "CONFIG_PACKAGE_luci" .config || true
           echo "==> Disabled packages"
           grep "CONFIG_PACKAGE_ppp\|CONFIG_PACKAGE_odhcp" .config || true
+          echo "==> Target device check"
+          grep "CONFIG_TARGET.*DEVICE" .config || (echo "ERROR: No target device!" && exit 1)
 
       - name: Copy custom files
         run: |
@@ -64,6 +69,14 @@ jobs:
           ../scripts/optimize.sh
           make defconfig
 
+      - name: Show target
+        working-directory: openwrt
+        run: |
+          echo "=== Target config ==="
+          grep '^CONFIG_TARGET' .config
+          echo "=== Device check ==="
+          grep "CONFIG_TARGET.*DEVICE" .config || (echo "WARNING: No target device!" && exit 1)
+
       - name: Verify critical packages
         working-directory: openwrt
         run: |
@@ -72,11 +85,6 @@ jobs:
           grep -q "^CONFIG_PACKAGE_kmod-zram=y$" .config || (echo "ERROR: kmod-zram missing!" && exit 1)
           grep -q "^CONFIG_PACKAGE_zram-swap=y$" .config || (echo "ERROR: zram-swap missing!" && exit 1)
           echo "OK: all critical packages present"
-
-      - name: Show target
-        working-directory: openwrt
-        run: |
-          grep '^CONFIG_TARGET' .config
 
       - name: Download sources
         working-directory: openwrt
@@ -87,13 +95,26 @@ jobs:
         working-directory: openwrt
         run: |
           make -j"$(nproc)" V=s
+          echo "=== Post-build target dir ==="
+          ls -la bin/targets/ramips/mt76x8/ 2>/dev/null || true
+
+      - name: Verify images exist
+        working-directory: openwrt
+        run: |
+          echo "=== Checking for .bin files ==="
+          if [ ! "$(ls -A bin/targets/ramips/mt76x8/*.bin 2>/dev/null)" ]; then
+            echo "ERROR: No .bin firmware files generated!"
+            echo "=== Target dir contents ==="
+            ls -la bin/targets/ramips/mt76x8/ 2>/dev/null || true
+            exit 1
+          fi
+          echo "OK: Firmware images found"
 
       - name: Check image size
         working-directory: openwrt
         run: |
           echo "=== Image sizes ==="
           find bin/targets/ramips/mt76x8 -maxdepth 1 -name "*.bin" -type f -exec ls -lh {} \; 2>/dev/null || true
-          
           for f in bin/targets/ramips/mt76x8/*.bin; do
             [ -e "$f" ] || continue
             size=$(stat -c%s "$f")
@@ -119,6 +140,9 @@ jobs:
           echo ""
           echo "=== Kernel config-6.12 Westwood entries ==="
           grep -n "WESTWOOD\|SWAP\|CONG_ADVANCED\|DEFAULT_TCP_CONG" openwrt/target/linux/ramips/mt76x8/config-6.12 || true
+          echo ""
+          echo "=== Target dir ==="
+          ls -la openwrt/bin/targets/ramips/mt76x8/ 2>/dev/null || true
 
       - name: Generate checksums
         working-directory: openwrt/bin/targets
