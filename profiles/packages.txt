@@ -4,7 +4,7 @@ luci-mod-admin-full
 luci-mod-network
 luci-mod-status
 luci-mod-system
-luci-theme-bootstrap
+luci-theme-openwrt
 uhttpd
 rpcd
 rpcd-mod-file
@@ -57,6 +57,7 @@ tc-tiny
 -kmod-crypto-hw-eip93
 -kmod-tcp-westwood
 -tc-full
+-luci-theme-bootstrap
 
 # ZATEN ÇIKARILMIŞ
 -luci-app-package-manager
