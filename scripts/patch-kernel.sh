@@ -2,31 +2,33 @@
 set -e
 
 OPENWRT_DIR="openwrt"
-TARGET_CONFIG="target/linux/ramips/mt76x8/config-6.12"
+TARGET_DIR="$OPENWRT_DIR/target/linux/ramips/mt76x8"
 
-echo "==> Patching kernel config: $TARGET_CONFIG"
+echo "==> Patching kernel configs in: $TARGET_DIR"
 
-# SWAP (ZRAM için zorunlu)
-sed -i '/^CONFIG_SWAP/d' "$OPENWRT_DIR/$TARGET_CONFIG"
-echo "CONFIG_SWAP=y" >> "$OPENWRT_DIR/$TARGET_CONFIG"
-echo "OK: CONFIG_SWAP=y set"
+for TARGET_CONFIG in "$TARGET_DIR"/config-6.*; do
+    [ -f "$TARGET_CONFIG" ] || continue
+    echo "Processing $TARGET_CONFIG..."
 
-# TCP Congestion Advanced
-sed -i '/^CONFIG_TCP_CONG_ADVANCED/d' "$OPENWRT_DIR/$TARGET_CONFIG"
-echo "CONFIG_TCP_CONG_ADVANCED=y" >> "$OPENWRT_DIR/$TARGET_CONFIG"
+    # SWAP (ZRAM için zorunlu)
+    sed -i '/^CONFIG_SWAP/d' "$TARGET_CONFIG"
+    echo "CONFIG_SWAP=y" >> "$TARGET_CONFIG"
 
-# TCP Westwood built-in
-sed -i '/^CONFIG_TCP_CONG_WESTWOOD/d' "$OPENWRT_DIR/$TARGET_CONFIG"
-echo "CONFIG_TCP_CONG_WESTWOOD=y" >> "$OPENWRT_DIR/$TARGET_CONFIG"
+    # TCP Congestion Advanced
+    sed -i '/^CONFIG_TCP_CONG_ADVANCED/d' "$TARGET_CONFIG"
+    echo "CONFIG_TCP_CONG_ADVANCED=y" >> "$TARGET_CONFIG"
 
-# Default congestion control - TÜM choice option'larını sil
-sed -i '/^CONFIG_DEFAULT_CUBIC/d' "$OPENWRT_DIR/$TARGET_CONFIG"
-sed -i '/^CONFIG_DEFAULT_RENO/d' "$OPENWRT_DIR/$TARGET_CONFIG"
-sed -i '/^CONFIG_DEFAULT_WESTWOOD/d' "$OPENWRT_DIR/$TARGET_CONFIG"
-sed -i '/^CONFIG_DEFAULT_TCP_CONG/d' "$OPENWRT_DIR/$TARGET_CONFIG"
+    # TCP Westwood built-in
+    sed -i '/^CONFIG_TCP_CONG_WESTWOOD/d' "$TARGET_CONFIG"
+    echo "CONFIG_TCP_CONG_WESTWOOD=y" >> "$TARGET_CONFIG"
 
-# Sadece Westwood'u aktif et (choice bloğunda tek seçenek)
-echo "CONFIG_DEFAULT_WESTWOOD=y" >> "$OPENWRT_DIR/$TARGET_CONFIG"
-echo "OK: Westwood default congestion control set"
+    # Default congestion control choice temizliği
+    sed -i '/^CONFIG_DEFAULT_CUBIC/d' "$TARGET_CONFIG"
+    sed -i '/^CONFIG_DEFAULT_RENO/d' "$TARGET_CONFIG"
+    sed -i '/^CONFIG_DEFAULT_WESTWOOD/d' "$TARGET_CONFIG"
+    sed -i '/^CONFIG_DEFAULT_TCP_CONG/d' "$TARGET_CONFIG"
 
-echo "==> Done"
+    echo "CONFIG_DEFAULT_WESTWOOD=y" >> "$TARGET_CONFIG"
+done
+
+echo "==> Done patching kernel configs"

@@ -33,6 +33,7 @@ tc-tiny
 -procd-ujail
 -procd-seccomp
 -odhcp6c
+-dnsmasq
 -kmod-usb2
 -kmod-usb-ohci
 -kmod-usb-ledtrig-usbport

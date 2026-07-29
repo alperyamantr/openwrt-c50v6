@@ -11,7 +11,7 @@ chmod +x ./files/opt/zapret/nfqws 2>/dev/null || true
 echo "==> Kernel config optimizations"
 cat >> .config << 'EOF'
 
-# ZRAM için SWAP desteği (ZORUNLU)
+# ZRAM için SWAP desteği
 CONFIG_KERNEL_SWAP=y
 
 # Debug/Profil çıkar - boyut küçült
@@ -22,22 +22,13 @@ CONFIG_KERNEL_ELF_CORE=n
 CONFIG_KERNEL_PROVE_LOCKING=n
 CONFIG_KERNEL_SECCOMP=n
 
-# KALLSYMS KAPATMA - symtab.h hatasına yol açar
-# CONFIG_KERNEL_KALLSYMS=n
-
-# Sıkıştırma optimizasyonu
-CONFIG_TARGET_SQUASHFS_BLOCK_SIZE=512
+# Sıkıştırma optimizasyonu (Hatalı 512 bayt parametresi DÜZELTİLDİ)
+CONFIG_TARGET_SQUASHFS_BLOCK_SIZE_512K=y
 CONFIG_USE_MKLIBS=y
 CONFIG_STRIP_KERNEL_EXPORTS=y
 
 # Incremental build hızlandırma
 CONFIG_CCACHE=y
-
-# ZRAM kernel config'leri - OpenWrt .config'inde CONFIG_KERNEL_ prefix'i gerekir
-# Ama kmod-zram zaten packages.txt'te, gerek yok
-# CONFIG_KERNEL_ZSMALLOC=y
-# CONFIG_KERNEL_ZRAM=y
-# CONFIG_KERNEL_ZRAM_DEF_COMP_LZ4=y
 EOF
 
 echo "==> Optimization complete."

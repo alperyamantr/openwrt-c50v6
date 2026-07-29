@@ -3,8 +3,10 @@ on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
+
 env:
   OPENWRT_VERSION: v25.12.5
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -33,14 +35,7 @@ jobs:
 
       - name: Clone OpenWrt
         run: |
-          # Cache varsa gecici kaydet, openwrt sil, clone yap, cache geri koy
-          mkdir -p /tmp/owrt-cache
-          [ -d openwrt/dl ] && mv openwrt/dl /tmp/owrt-cache/
-          [ -d openwrt/feeds ] && mv openwrt/feeds /tmp/owrt-cache/
-          rm -rf openwrt
           git clone --depth=1 --branch ${OPENWRT_VERSION} https://github.com/openwrt/openwrt.git
-          [ -d /tmp/owrt-cache/dl ] && mv /tmp/owrt-cache/dl openwrt/
-          [ -d /tmp/owrt-cache/feeds ] && mv /tmp/owrt-cache/feeds openwrt/
 
       - name: Update feeds
         working-directory: openwrt
@@ -62,8 +57,6 @@ jobs:
           grep "CONFIG_PACKAGE_luci" .config || true
           echo "==> Disabled packages"
           grep "CONFIG_PACKAGE_ppp\|CONFIG_PACKAGE_odhcp" .config || true
-          echo "==> Target device check"
-          grep "CONFIG_TARGET.*DEVICE" .config || (echo "ERROR: No target device!" && exit 1)
 
       - name: Copy custom files
         run: |
@@ -76,14 +69,6 @@ jobs:
           ../scripts/optimize.sh
           make defconfig
 
-      - name: Show target
-        working-directory: openwrt
-        run: |
-          echo "=== Target config ==="
-          grep '^CONFIG_TARGET' .config
-          echo "=== Device check ==="
-          grep "CONFIG_TARGET.*DEVICE" .config || (echo "WARNING: No target device!" && exit 1)
-
       - name: Verify critical packages
         working-directory: openwrt
         run: |
@@ -92,6 +77,11 @@ jobs:
           grep -q "^CONFIG_PACKAGE_kmod-zram=y$" .config || (echo "ERROR: kmod-zram missing!" && exit 1)
           grep -q "^CONFIG_PACKAGE_zram-swap=y$" .config || (echo "ERROR: zram-swap missing!" && exit 1)
           echo "OK: all critical packages present"
+
+      - name: Show target
+        working-directory: openwrt
+        run: |
+          grep '^CONFIG_TARGET' .config
 
       - name: Download sources
         working-directory: openwrt
@@ -102,8 +92,6 @@ jobs:
         working-directory: openwrt
         run: |
           make -j"$(nproc)" V=s
-          echo "=== Post-build target dir ==="
-          ls -la bin/targets/ramips/mt76x8/ 2>/dev/null || true
 
       - name: Verify images exist
         working-directory: openwrt
@@ -111,56 +99,40 @@ jobs:
           echo "=== Checking for .bin files ==="
           if [ ! "$(ls -A bin/targets/ramips/mt76x8/*.bin 2>/dev/null)" ]; then
             echo "ERROR: No .bin firmware files generated!"
-            echo "=== Target dir contents ==="
             ls -la bin/targets/ramips/mt76x8/ 2>/dev/null || true
             exit 1
           fi
           echo "OK: Firmware images found"
 
       - name: Check image size
-        working-directory: openwrt
+        working-directory: openwrt/bin/targets/ramips/mt76x8
         run: |
           echo "=== Image sizes ==="
-          find bin/targets/ramips/mt76x8 -maxdepth 1 -name "*.bin" -type f -exec ls -lh {} \; 2>/dev/null || true
-          for f in bin/targets/ramips/mt76x8/*.bin; do
-            [ -e "$f" ] || continue
+          ls -lh *.bin
+          for f in *.bin; do
             size=$(stat -c%s "$f")
             kb=$(($size/1024))
             echo "$f: ${kb}KB"
             if [ "$size" -gt 7600000 ]; then
-              echo "WARNING: $f is over 7.6MB -- close to 8MB flash limit!"
+              echo "WARNING: $f is over 7.6MB — close to 8MB flash limit!"
             fi
           done
 
       - name: Debug kernel config (on failure)
         if: failure()
         run: |
-          echo "=== Build FAILED -- dumping debug info ==="
+          echo "=== Build FAILED — dumping debug info ==="
           echo "=== Kernel config tail ==="
-          for f in openwrt/target/linux/ramips/mt76x8/config-*; do
-            [ -f "$f" ] || continue
-            echo "--- $f ---"
-            tail -30 "$f"
-          done
+          tail -30 openwrt/target/linux/ramips/mt76x8/config-6.12
           echo ""
           echo "=== Duplicate check ==="
-          for f in openwrt/target/linux/ramips/mt76x8/config-*; do
-            [ -f "$f" ] || continue
-            echo "--- $f duplicates ---"
-            sort "$f" | uniq -d
-          done
+          sort openwrt/target/linux/ramips/mt76x8/config-6.12 | uniq -d
           echo ""
           echo "=== .config tail ==="
           tail -30 openwrt/.config
           echo ""
-          echo "=== Kernel config Westwood entries ==="
-          for f in openwrt/target/linux/ramips/mt76x8/config-*; do
-            [ -f "$f" ] || continue
-            grep -n "WESTWOOD\|SWAP\|CONG_ADVANCED\|DEFAULT_TCP_CONG" "$f" || true
-          done
-          echo ""
-          echo "=== Target dir ==="
-          ls -la openwrt/bin/targets/ramips/mt76x8/ 2>/dev/null || true
+          echo "=== Kernel config-6.12 Westwood entries ==="
+          grep -n "WESTWOOD\|SWAP\|CONG_ADVANCED\|DEFAULT_TCP_CONG" openwrt/target/linux/ramips/mt76x8/config-6.12 || true
 
       - name: Generate checksums
         working-directory: openwrt/bin/targets
