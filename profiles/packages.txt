@@ -11,7 +11,8 @@ rpcd-mod-file
 rpcd-mod-rpcsys
 firewall4
 dnsmasq-full
-ca-bundle
+ca-certificates
+htop
 kmod-nfnetlink-queue
 kmod-nft-queue
 kmod-sched
@@ -20,14 +21,16 @@ kmod-zram
 fstools
 block-mount
 blockd
-htop
 iptables-mod-nfqueue
 libnetfilter-queue
-kmod-sched-fq-codel
-kmod-sched-cake
 tc-tiny
 
-# ÇIKAR (Patch'ler sayesinde artık güvenli)
+# ÇIKAR (Optimizasyon & Güvenlik)
+-ca-bundle
+-uhttpd-mod-ubus
+-luci-i18n-base-en
+-luci-i18n-firewall-en
+-luci-i18n-opkg-en
 -opkg
 -libopkg
 -procd-ujail
@@ -56,11 +59,11 @@ tc-tiny
 -kmod-thermal
 -kmod-hwmon-core
 -kmod-crypto-hw-eip93
--kmod-tcp-westwood
 -tc-full
 -luci-theme-bootstrap
+-kmod-sched-cake
 
-# ZATEN ÇIKARILMIŞ
+# ZATEN ÇIKARILMIŞ / PASİF
 -luci-app-package-manager
 -luci-proto-ipv6
 -luci-proto-ppp
