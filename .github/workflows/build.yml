@@ -123,16 +123,16 @@ jobs:
         run: |
           echo "=== Build FAILED — dumping debug info ==="
           echo "=== Kernel config tail ==="
-          tail -30 openwrt/target/linux/ramips/mt76x8/config-6.12
+          tail -30 openwrt/target/linux/ramips/mt76x8/config-6.*
           echo ""
           echo "=== Duplicate check ==="
-          sort openwrt/target/linux/ramips/mt76x8/config-6.12 | uniq -d
+          sort openwrt/target/linux/ramips/mt76x8/config-6.* | uniq -d
           echo ""
           echo "=== .config tail ==="
           tail -30 openwrt/.config
           echo ""
-          echo "=== Kernel config-6.12 Westwood entries ==="
-          grep -n "WESTWOOD\|SWAP\|CONG_ADVANCED\|DEFAULT_TCP_CONG" openwrt/target/linux/ramips/mt76x8/config-6.12 || true
+          echo "=== Kernel config Westwood entries ==="
+          grep -n "WESTWOOD\|SWAP\|CONG_ADVANCED\|DEFAULT_TCP_CONG" openwrt/target/linux/ramips/mt76x8/config-6.* || true
 
       - name: Generate checksums
         working-directory: openwrt/bin/targets
