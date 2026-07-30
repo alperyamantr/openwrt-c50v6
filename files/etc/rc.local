@@ -1,17 +1,34 @@
 #!/bin/sh
-# Put your custom commands here that should be executed once
-# the system init finished.
-
-# nfqws executable bit'ini zapret baÅŸlamadan Ã¶nce set et
 chmod +x /opt/zapret/nfqws
 
-# --- SQM / Rate Limit (Bufferbloat Ã–nleyici - 50M/8M Hat Ä°Ã§in) ---
+# Temizlik
 tc qdisc del dev eth0 root 2>/dev/null
-tc qdisc add dev eth0 root handle 1: htb default 11
-tc class add dev eth0 parent 1: classid 1:11 htb rate 7200kbit ceil 7200kbit
-tc qdisc add dev eth0 parent 1:11 handle 10: fq_codel limit 10240 flows 1024 quantum 1514
 
-# Internet geldikten sonra listeyi arka planda gÃ¼ncelle
+# Ana HTB Kökü
+tc qdisc add dev eth0 root handle 1: htb default 11
+tc class add dev eth0 parent 1: classid 1:1 htb rate 7200kbit ceil 7200kbit
+
+# 1:10 - Oyun Sınıfı (Handle 10:)
+tc class add dev eth0 parent 1:1 classid 1:10 htb rate 200kbit ceil 7200kbit prio 0 quantum 1514
+tc qdisc add dev eth0 parent 1:10 handle 10: fq_codel limit 1024 flows 128 quantum 300 target 5ms interval 40ms
+
+# 1:11 - Genel Trafik Sınıfı (Handle 20:)
+tc class add dev eth0 parent 1:1 classid 1:11 htb rate 7000kbit ceil 7200kbit prio 1 quantum 1514
+tc qdisc add dev eth0 parent 1:11 handle 20: fq_codel limit 10240 flows 1024 quantum 1514
+
+# --- BİRİNCİL FİLTRE: CS2 UDP Port Aralığı (27005-27020) -> Doğrudan Vip Sınıfa ---
+# CS2 UDP Dst Port 27005-27020 yazar
+tc filter add dev eth0 parent 1: protocol ip prio 1 u32 \
+   match ip protocol 17 0xff \
+   match ip dport 27005 0xfff0 \
+   flowid 1:10
+
+# --- İKİNCİL FİLTRE: Yedek DSCP 46 Filtresi ---
+tc filter add dev eth0 parent 1: protocol ip prio 2 u32 \
+   match ip tos 0xb8 0xfc \
+   flowid 1:10
+
+# HaGeZi Güncelleme
 (
     for i in $(seq 1 12); do
         wget -qO- --timeout=5 http://1.1.1.1 >/dev/null 2>&1 && break
