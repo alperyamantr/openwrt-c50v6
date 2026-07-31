@@ -1,10 +1,10 @@
 #!/bin/sh
 chmod +x /opt/zapret/nfqws 2>/dev/null
 
-# Gerçek WAN Arayüzün
+# Gercek WAN Arayuzu
 IFACE="eth0.2"
 
-# Alias Tanımlama (SSH'ta 'cs2' veya 'qos' yazıp izlemek için)
+# Alias Tanimlama (SSH'ta 'cs2' veya 'qos' yazip izlemek icin)
 if ! grep -q "alias qos=" /etc/profile; then
     echo "alias qos='tc -s class show dev $IFACE'" >> /etc/profile
     echo "alias cs2='tc -s class show dev $IFACE'" >> /etc/profile
@@ -14,37 +14,35 @@ fi
 tc qdisc del dev $IFACE root 2>/dev/null
 nft delete table inet cs2_qos 2>/dev/null
 
-# Ana HTB Kökü (Burst: 6400b - Akıcı internet için)
+# Ana HTB Koku (Burst: 6400b)
 tc qdisc add dev $IFACE root handle 1: htb default 11
 tc class add dev $IFACE parent 1: classid 1:1 htb rate 7200kbit ceil 7200kbit burst 6400b cburst 6400b
 
-# 1:10 - OYUN / CANLI / VIP SINIFI (En Yüksek Öncelik: prio 0)
+# 1:10 - OYUN / CANLI / VIP SINIFI (prio 0)
 tc class add dev $IFACE parent 1:1 classid 1:10 htb rate 300kbit ceil 7200kbit prio 0 quantum 1514 burst 3200b cburst 3200b
 tc qdisc add dev $IFACE parent 1:10 handle 10: fq_codel limit 1024 flows 128 quantum 300 target 5ms interval 40ms
 
-# 1:11 - GENEL EV TRAFİĞİ (Web, YouTube, İndirme - prio 1)
+# 1:11 - GENEL EV TRAFIGI (prio 1)
 tc class add dev $IFACE parent 1:1 classid 1:11 htb rate 6900kbit ceil 7200kbit prio 1 quantum 1514 burst 6400b cburst 6400b
 tc qdisc add dev $IFACE parent 1:11 handle 20: fq_codel limit 10240 flows 1024 quantum 1514
 
-# ==============================================================================
-# --- GENEL VIP FILTRELERI (Sadece tek oyun değil, tüm oyun & canlı trafik) ---
-# ==============================================================================
+# --- VIP FILTRELERI ---
 
-# 1. CS2 & Steam Datagram Relay (SDR) Portları (27000-27095)
+# 1. CS2 & Steam SDR (27000-27095)
 tc filter add dev $IFACE parent 1: protocol ip prio 1 u32 match ip protocol 17 0xff match ip dport 27000 0xffe0 flowid 1:10
 tc filter add dev $IFACE parent 1: protocol ip prio 1 u32 match ip protocol 17 0xff match ip dport 27032 0xffe0 flowid 1:10
 tc filter add dev $IFACE parent 1: protocol ip prio 1 u32 match ip protocol 17 0xff match ip dport 27064 0xffe0 flowid 1:10
 
-# 2. Voice & Relay Portları (Steam Voice, Discord UDP, WhatsApp Ses)
+# 2. Voice & Relay (Steam Voice, Discord UDP, WhatsApp)
 tc filter add dev $IFACE parent 1: protocol ip prio 1 u32 match ip protocol 17 0xff match ip dport 3478 0xffff flowid 1:10
 tc filter add dev $IFACE parent 1: protocol ip prio 1 u32 match ip protocol 17 0xff match ip dport 4379 0xfffe flowid 1:10
 
-# 3. Mobil Oyunlar & Lords Mobile UDP Blokları (5000-5500 & 8000-9000 & 10000-20000)
+# 3. Mobil Oyunlar (5000-5500, 8000-9000, 10000-20000)
 tc filter add dev $IFACE parent 1: protocol ip prio 1 u32 match ip protocol 17 0xff match ip dport 5000 0xfe00 flowid 1:10
 tc filter add dev $IFACE parent 1: protocol ip prio 1 u32 match ip protocol 17 0xff match ip dport 8000 0xfc00 flowid 1:10
 tc filter add dev $IFACE parent 1: protocol ip prio 1 u32 match ip protocol 17 0xff match ip dport 10000 0xc000 flowid 1:10
 
-# HaGeZi Güncelleme
+# HaGeZi Guncelleme
 (
     for i in $(seq 1 12); do
         wget -qO- --timeout=5 http://1.1.1.1 >/dev/null 2>&1 && break
